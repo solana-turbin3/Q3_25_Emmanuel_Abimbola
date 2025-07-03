@@ -16,6 +16,7 @@
     "spl_metadata": "ts-node ./cluster1/spl_metadata.ts",
     "nft_image": "ts-node ./cluster1/nft_image.ts",
     "nft_metadata": "ts-node ./cluster1/nft_metadata.ts",
+    "transfer_gill": "ts-node ./cluster1/transfer_gill.ts",
     "nft_mint": "ts-node ./cluster1/nft_mint.ts",
     "vault_init": "ts-node ./cluster1/vault_init.ts",
     "vault_deposit": "ts-node ./cluster1/vault_deposit.ts",

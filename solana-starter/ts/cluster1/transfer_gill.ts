@@ -9,9 +9,9 @@ import { getOrCreateAssociatedTokenAccount, transfer } from "@solana/spl-token";
 */
 
 import {buildTransferTokensTransaction, TOKEN_2022_PROGRAM_ADDRESS} from "gill/programs/token";
-import {createSolanaClient, address, signTransactionMessageWithSigners, createTransaction, getExplorerLink, getSignatureFromTransaction} from "gill";
+import {createSolanaClient, address, signTransactionMessageWithSigners, getExplorerLink, getSignatureFromTransaction} from "gill";
 import {loadKeypairSignerFromFile} from "gill/node";
-import { simulateTransaction } from "@coral-xyz/anchor/dist/cjs/utils/rpc";
+// import { simulateTransaction } from "@coral-xyz/anchor/dist/cjs/utils/rpc";
 //import { globalAgent } from "http";
 // import { signerIdentity } from "@metaplex-foundation/umi";
 
@@ -50,7 +50,7 @@ const transferToDestination = address("3rLojDoVPUKBXnr2vybXJA3Lh3wKBxxDHx7fxJn8m
             mint,
             // mint: tokenProgram,
             authority: signer,
-            amount: 1n,
+            amount: 1,
             destination: transferToDestination,
             tokenProgram,
         });
@@ -60,14 +60,25 @@ const transferToDestination = address("3rLojDoVPUKBXnr2vybXJA3Lh3wKBxxDHx7fxJn8m
         //console.log(transferTx);
 
         const signedTransaction = await signTransactionMessageWithSigners(transferTx);
-        const signature =getSignatureFromTransaction(signedTransaction);
+        try {console.log( "Sending transaction:",getExplorerLink({cluster: "devnet",transaction: getSignatureFromTransaction(signedTransaction),
+
+        }),);
+        await sendAndConfirmTransaction(signedTransaction);
+        console.log("Transaction confirmed!"
+        );} 
+        catch (err) {
+            console.error("Unable to send and confirm the transaction"); 
+            console.error(err);
+        }
+        /*const signature =getSignatureFromTransaction(signedTransaction);
 
         console.log("\nExplorer Link for transferiing the tokens:");
         //const signature: string = await sendAndConfirmTransaction(signedTransaction);
         console.log(getExplorerLink({ cluster: "devnet", transaction: signature}));
 
         const success = await sendAndConfirmTransaction(signedTransaction);
-        console.log("Successful", success);
+        console.log("Successful", success); 
+        */
 
         // Get the token account of the toWallet address, and if it does not exist, create it
 

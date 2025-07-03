@@ -17,27 +17,28 @@ umi.use(signerIdentity(signer));
         // Follow this JSON structure
         // https://docs.metaplex.com/programs/token-metadata/changelog/v1.0#json-structure
 
-        // const image = ???
-        // const metadata = {
-        //     name: "?",
-        //     symbol: "?",
-        //     description: "?",
-        //     image: "?",
-        //     attributes: [
-        //         {trait_type: '?', value: '?'}
-        //     ],
-        //     properties: {
-        //         files: [
-        //             {
-        //                 type: "image/png",
-        //                 uri: "?"
-        //             },
-        //         ]
-        //     },
-        //     creators: []
-        // };
-        // const myUri = ???
-        // console.log("Your metadata URI: ", myUri);
+        //const image = "https://gateway.irys.xyz/CRiNDSV91Ve2doq6ftePNgoQoU6RxrbxcENWEJP3zuJr";
+        const image = "https://devnet.irys.xyz/2sjRzNdC2FJy3cWKfewZ9WiDuMrXVWr1EYfcHCVjSP3N";
+        const metadata = {
+            name: "Trump Farms",
+            symbol: "TTF",
+            description: "trump comes to roost",
+            image,
+            attributes: [
+              {trait_type: '?', value: '?'}],
+             properties: {
+                 files: [
+                     {
+                         type: "image/png",
+                       uri: "?"
+                     },
+                 ]
+             },
+             creators: []
+         };
+        //const myUri = "https://gateway.irys.xyz/CRiNDSV91Ve2doq6ftePNgoQoU6RxrbxcENWEJP3zuJr"
+        const myUri = "https://gateway.irys.xyz/2sjRzNdC2FJy3cWKfewZ9WiDuMrXVWr1EYfcHCVjSP3N";
+        console.log("Your metadata URI: ", myUri);
     }
     catch(error) {
         console.log("Oops.. Something went wrong", error);
