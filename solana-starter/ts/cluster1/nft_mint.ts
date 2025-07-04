@@ -19,15 +19,15 @@ umi.use(mplTokenMetadata())
 const mint = generateSigner(umi);
 // const metadataUri = "https://app.ardrive.io/#/file/08f310da-070b-4e9f-a6d9-e2b641ae9b09/view";
 //const metadataUri = "https://gateway.irys.xyz/CRiNDSV91Ve2doq6ftePNgoQoU6RxrbxcENWEJP3zuJr";
-const metadataUri = "https://devnet.irys.xyz/2sjRzNdC2FJy3cWKfewZ9WiDuMrXVWr1EYfcHCVjSP3N";
+const metadataUri = "https://gateway.irys.xyz/H5vC1NRnjqwhJkUUyJE9YrQvTikqixkvs42ZGD8FK1MW";
 
 (async () => {
 
     // const nft =
     let tx = createNft(umi, {
         mint,
-        name: "TrumpFarm",
-        symbol: "$TFF",
+        name: "EuroJohnson",
+        symbol: "$EUJ",
         uri: metadataUri,
         sellerFeeBasisPoints: percentAmount(5.5) 
 });
