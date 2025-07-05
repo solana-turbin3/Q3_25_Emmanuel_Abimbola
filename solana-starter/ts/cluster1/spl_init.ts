@@ -81,8 +81,11 @@ const space = getMintSize();
                 commitment: 'confirmed',
             });
             console.log("\nCheck the Explorer for your TXN:", getExplorerLink({cluster: "devnet",
-            transaction: getSignatureFromTransaction(signedTransaction),
-        })
+            transaction: signature
+        }));
+        catch (error){
+            
+        }
 
         }
                 
