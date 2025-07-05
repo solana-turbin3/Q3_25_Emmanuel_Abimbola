@@ -14,7 +14,7 @@ import { TOKEN_2022_PROGRAM_ADDRESS, getInitializeMintInstruction, getMintSize }
 
 
 // using gill to allocate the necessary imports
-const {rpc, rpcSubscriptions} = createSolanaClient({urlOrMoniker: "devnet"});
+const {rpc, sendAndConfirmTransaction} = createSolanaClient({urlOrMoniker: "devnet"});
 const tokenProgram = TOKEN_2022_PROGRAM_ADDRESS;
 const space = getMintSize();
 
@@ -73,10 +73,19 @@ const space = getMintSize();
 
         // signed the transactions successfully, but the problem is getting it to on-chain and 
         const signedTransaction = await signTransactionMessageWithSigners(transaction);
-        console.log("\nCheck the Explorer for your TXN:", getExplorerLink({cluster: "devnet",
+        const signature = getSignatureFromTransaction(signedTransaction);
+        
+        try {
+            await sendAndConfirmTransaction(signedTransaction, {
+                skipPreflight: true,
+                commitment: 'confirmed',
+            });
+            console.log("\nCheck the Explorer for your TXN:", getExplorerLink({cluster: "devnet",
             transaction: getSignatureFromTransaction(signedTransaction),
         })
-        
+
+        }
+                
     )}
     catch(err) {
         console.log(`\n Something went wrong. Oops!: ${err}`)
