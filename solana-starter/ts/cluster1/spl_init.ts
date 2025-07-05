@@ -73,25 +73,31 @@ const space = getMintSize();
 
         // signed the transactions successfully, but the problem is getting it to on-chain and 
         const signedTransaction = await signTransactionMessageWithSigners(transaction);
-        const signature = getSignatureFromTransaction(signedTransaction);
+        // const signature = getSignatureFromTransaction(signedTransaction);
+        console.log(mint.address);
+        console.log(signer.address);
+
+        console.log("Mint address:", mint.address.toString());
+console.log("Signer address:", signer.address.toString());
+console.log("Metadata address:", metadataAddress.toString());
+console.log("Rent-exempt lamports:", await getMinimumBalanceForRentExemption(space));
+console.log("Token program:", tokenProgram.toString());
         
         try {
-            await sendAndConfirmTransaction(signedTransaction, {
+            const signature = await sendAndConfirmTransaction(signedTransaction, {
                 skipPreflight: true,
                 commitment: 'confirmed',
             });
-            console.log("\nCheck the Explorer for your TXN:", getExplorerLink({cluster: "devnet",
-            transaction: signature
-        }));
-        catch (error){
-            
+            console.log("\nCheck the Explorer for your TXN:", getExplorerLink({cluster: "devnet", transaction: signature}));
         }
+            catch (error){
+            console.log(`Unable to send and confirm the transaction. ${error}`)};
 
-        }
+        
                 
-    )}
+    }
     catch(err) {
-        console.log(`\n Something went wrong. Oops!: ${err}`)
+        console.log(`\n Something went wrong. Oops!: ${err}`);
     }
 })()
 
