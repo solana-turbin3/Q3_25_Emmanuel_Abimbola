@@ -21,7 +21,7 @@ umi.use(signerIdentity(signer));
     try {
         //1. Load image
         // for this, y'all gonna get a nice photo of me in my 20s.
-        const imagePath = await readFile("cluster1/abims.jpeg");
+        const imagePath = await readFile("cluster1/shrinath_rug.png");
 
         //2. Convert image to generic file.
         const image = createGenericFile(
@@ -38,3 +38,6 @@ umi.use(signerIdentity(signer));
         console.log("Oops.. Something went wrong", error);
     }
 })();
+
+
+// For Improvement, consider adding a buffer/rate-limit. The code has the potential to run for so long without any stopping.
