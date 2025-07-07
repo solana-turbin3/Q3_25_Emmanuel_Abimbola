@@ -2,7 +2,7 @@
 // I will appreciate PRs to help solve this problem. This program does all the steps from init to metadata to minting.
 
 // Using gill only.
-import { createSolanaClient, generateKeyPairSigner, SendAndConfirmTransactionWithSignersFunction, getExplorerLink, createTransaction, type KeyPairSigner, getMinimumBalanceForRentExemption, signTransactionMessageWithSigners, getSignatureFromTransaction, sendAndConfirmTransactionWithSignersFactory } from 'gill';
+import { createSolanaClient, generateKeyPairSigner, SendAndConfirmTransactionWithSignersFunction, getExplorerLink, createTransaction, type KeyPairSigner, getMinimumBalanceForRentExemption, signTransactionMessageWithSigners, getSignatureFromTransaction, sendAndConfirmTransactionWithSignersFactory, signAndSendTransactionMessageWithSigners, sendAndConfirmTransactionFactory } from 'gill';
 import { loadKeypairSignerFromFile } from "gill/node";
 import { getCreateAccountInstruction, getCreateMetadataAccountV3Instruction, getTokenMetadataAddress } from 'gill/programs';
 import { TOKEN_2022_PROGRAM_ADDRESS, getInitializeMintInstruction, getMintSize } from 'gill/programs/token';
@@ -14,7 +14,8 @@ import { TOKEN_2022_PROGRAM_ADDRESS, getInitializeMintInstruction, getMintSize }
 
 
 // using gill to allocate the necessary imports
-const {rpc, sendAndConfirmTransaction} = createSolanaClient({urlOrMoniker: "devnet"});
+const {rpc, rpcSubscriptions} = createSolanaClient({urlOrMoniker: "devnet"});
+const sendAndConfirmTransaction = sendAndConfirmTransactionFactory({rpc,rpcSubscriptions});
 const tokenProgram = TOKEN_2022_PROGRAM_ADDRESS;
 const space = getMintSize();
 
@@ -28,7 +29,7 @@ const space = getMintSize();
         const mint = await generateKeyPairSigner();
         const metadataAddress = await getTokenMetadataAddress(mint);
 
-        const transaction = createTransaction({
+        const tx = createTransaction({
             feePayer: signer,
             version: "legacy",
             instructions: [
@@ -44,9 +45,7 @@ const space = getMintSize();
                     mintAuthority: signer.address,
                     freezeAuthority: signer.address,
                     decimals: 9,
-                }, {
-                    programAddress:tokenProgram,
-                },),
+                }), 
                 getCreateMetadataAccountV3Instruction( {
                     collectionDetails: null,
                     isMutable: true,
@@ -56,44 +55,42 @@ const space = getMintSize();
                     mintAuthority: signer,
                     payer: signer,
                     data: {
-                        sellerFeeBasisPoints: 0,
+                        sellerFeeBasisPoints: 5.5,
                         collection: null,
                         creators: null,
                         uses: null,
-                        name: "Shrinath Aritotelian",
+                        name: "Shrinath Aristotelian",
                         symbol:"SHA",
                         uri: "https://gateway.irys.xyz/G9Q2eJ5EgyoA6EMcSTdsYJnWeCDzx2TQWjrBQbmPCKr2",
                     },
                 }),
             ],
-            latestBlockhash,
+            latestBlockhash
         });
         //  const sendAndConfirm = await sendAndConfirmTransactionWithSignersFactory({rpc,rpcSubscriptions});
         // console.log(sendAndConfirm);
 
         // signed the transactions successfully, but the problem is getting it to on-chain and 
-        const signedTransaction = await signTransactionMessageWithSigners(transaction);
+        const signedTransaction = await signTransactionMessageWithSigners(tx);
         // const signature = getSignatureFromTransaction(signedTransaction);
-        console.log(mint.address);
-        console.log(signer.address);
 
         console.log("Mint address:", mint.address.toString());
 console.log("Signer address:", signer.address.toString());
 console.log("Metadata address:", metadataAddress.toString());
-console.log("Rent-exempt lamports:", await getMinimumBalanceForRentExemption(space));
+console.log("Rent-exempt lamports:", getMinimumBalanceForRentExemption(space));
 console.log("Token program:", tokenProgram.toString());
         
-        try {
-            const signature = await sendAndConfirmTransaction(signedTransaction, {
-                skipPreflight: true,
-                commitment: 'confirmed',
-            });
-            console.log("\nCheck the Explorer for your TXN:", getExplorerLink({cluster: "devnet", transaction: signature}));
+        /*try {
+            const signedMessage = await signTransactionMessageWithSigners(tx);
+            await sendAndConfirmTransaction(signedMessage);
+            console.log("\nCheck the Explorer for your TXN:", getExplorerLink({cluster: "devnet", transaction: getSignatureFromTransaction(signedMessage)}));
         }
             catch (error){
             console.log(`Unable to send and confirm the transaction. ${error}`)};
-
-        
+      const signedTx = await signTransactionMessageWithSigners(tx);
+        const signatu = await sendAndConfirmTransaction(signedTx, );
+         console.log(`This is the output ${signedTx}`);
+        */
                 
     }
     catch(err) {
