@@ -21,5 +21,12 @@ I made it in guys.
 - I participated in both Sol A and B for all 3 days (the knowledge and experience gap was just too much... I needed every ounce of coverup time to fill it)
 - Setup my git finally (the right way), thanks to duckDuck and Claude
 - Uploaded the repos @solana-starter and @rustprereqs
-- Stay tuned for more updates..
 - 
+
+## Week 2
+- The week started on a high note with yours truly going over concepts in Rust, and getting familiar with more advanced topics
+- I made some PRs to some projects I encountered.
+- Then came the first lesson, where I learnt a different implementation of encapsulating functions from @Shrinath.
+- Working on the tasks, and also pushing to git consistently.
+- The assignment on the capstone will continue in earnest.
+- - *Stay tuned for more updates...*
