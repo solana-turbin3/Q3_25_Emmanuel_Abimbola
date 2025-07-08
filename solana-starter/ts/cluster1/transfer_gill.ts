@@ -10,7 +10,7 @@ import { getOrCreateAssociatedTokenAccount, transfer } from "@solana/spl-token";
 
 import {buildTransferTokensTransaction, TOKEN_2022_PROGRAM_ADDRESS} from "gill/programs/token";
 import {createSolanaClient, address, signTransactionMessageWithSigners, getExplorerLink, getSignatureFromTransaction} from "gill";
-import {...} from "gill/node";
+import {loadKeypairSignerFromFile} from "gill/node";
 // import { simulateTransaction } from "@coral-xyz/anchor/dist/cjs/utils/rpc";
 //import { globalAgent } from "http";
 // import { signerIdentity } from "@metaplex-foundation/umi";
@@ -89,4 +89,4 @@ const transferToDestination = address("3rLojDoVPUKBXnr2vybXJA3Lh3wKBxxDHx7fxJn8m
 
     
 
-})();
+})();   
