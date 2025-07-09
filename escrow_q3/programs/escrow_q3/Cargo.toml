@@ -11,6 +11,7 @@ name = "escrow_q3"
 [features]
 default = []
 cpi = ["no-entrypoint"]
+anchor-debug = []
 no-entrypoint = []
 no-idl = []
 no-log-ix-name = []

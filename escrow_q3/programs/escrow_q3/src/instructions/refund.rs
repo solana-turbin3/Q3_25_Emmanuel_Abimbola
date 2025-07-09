@@ -1,14 +1,17 @@
 use anchor_lang::prelude::*;
 // use anchor_spl::*;
 use anchor_spl::{
-    associated_token::AssociatedToken,
+    //associated_token::AssociatedToken,
     token_interface::{
         close_account, transfer_checked, CloseAccount, Mint, TokenAccount, TokenInterface,
         TransferChecked,
     },
 };
 
+use crate::state::Escrow;
+
 #[derive(Accounts)]
+#[instruction(seed: u64)]
 pub struct Refund <'info> {
     #[account(mut)]
     pub maker: Signer <'info>,
@@ -59,17 +62,20 @@ impl<'info> Refund <'info> {
             authority: self.escrow.to_account_info()
         };
 
-        let transfer_cpi_ctx = CpiContext::new_witH_signer(self.token_program.to_account_info(), transfer_accounts, &signer_seeds);
+        let signer_seeds = &[&[]]
+
+        let transfer_cpi_ctx = CpiContext::new_with_signer(self.token_program.to_account_info(), transfer_accounts, &signer_seeds);
         transfer_checked(transfer_cpi_ctx, self.vault.amount, self.mint_a.decimals);
 
-        let close_account = CloseAccount {
+        let close_accounts = CloseAccount {
             account: self.vault.to_account_info(),
             destination: self.maker.to_account_info(), 
             authority: self.escrow.to_account_info()
         };
 
-        let close_cpi_ctx = CpiContext::new_with_signer(self.token_program.to_account_info(), close_account, signer_seeds);
-        close_account(close_cpi_ctx)
+        let close_cpi_ctx = CpiContext::new_with_signer(self.token_program.to_account_info(), close_accounts, signer_seeds);
+        close_account(close_cpi_ctx);
+        Ok(())
         
     }
 }

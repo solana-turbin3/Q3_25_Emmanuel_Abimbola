@@ -14,8 +14,12 @@ declare_id!("7mQrCXzh6BWz7dsUyWydj1JDB7H4fFbEJsZbSywe7xzp");
 #[program]
 pub mod escrow_q3 {
     use super::*;
+    // use crate::instructions::Initialize;
+    // pub fn initialize(ctx: Context<Initialize>) -> Result<()> {
+    //     make::handler(ctx)
+    // }
 
-    pub fn initialize(ctx: Context<Initialize>) -> Result<()> {
+    pub fn make(ctx: Context<Make>) -> Result<()> {
         make::handler(ctx)
     }
 }
