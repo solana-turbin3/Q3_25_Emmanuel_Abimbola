@@ -20,6 +20,8 @@ pub mod anchor_vault {
     pub fn withdraw(ctx: Context<Payment>, amount: u64) -> Result<()> {
         ctx.accounts.withdraw(amount)
     }
+    pub fn close(ctx: Context<Payment>, amount: u64) -> Result<()> {
+        ctx.accounts.close(amount)
 }
 
 #[derive(Accounts)]
@@ -132,8 +134,31 @@ impl<'info> Payment<'info> {
 
      Ok(())
 
-
 }
+
+//Close Account
+//  pub fn close(&mut self, total_amount: u64) -> Result<()>{
+//     let total_amount = ;
+//     let rent_exempt: u64 = Rent::get()?.minimum_balance(self.vault.to_account_info().data_len());
+
+//     let cpi_program: AccountInfo<'_> = self.system_program.to_account_info();
+//     let cpi_account: Transfer<'_> = Transfer {
+//             from: self.vault.to_account_info(),
+//             to: self.user.to_account_info(),
+//     };
+//     let seeds: &[&[u8]; 3] = &[
+//         b"vault",
+//         self.vault_state.to_account_info().key.as_ref(),
+//         &[self.vault_state.vault_bump]
+//     ];
+//     let signer_seeds: &[&[&[u8]]; 1] = &[&seeds[..]];    
+//      let cpi_ctx= CpiContext::new_with_signer(cpi_program, cpi_account, signer_seeds);
+
+//      transfer(cpi_ctx,  amount)?;
+
+//      Ok(())
+
+// }
 }
 
 #[derive(Accounts)]
@@ -165,8 +190,36 @@ pub struct Close <'info> {
 //     }
 // }
 
+#[derive(Accounts)]
+pub struct Close<'info> {
 
+    #[account(mut)]
+    pub user: Signer<'info>,
 
+    #[account(
+        mut,
+        seeds = [b"vault", vault_state.key().as_ref()],
+        bump = vault_state.vault_bump,
+        close = user,
+
+        // Still some issues with implementation here. I need some help with it.
+    )]
+    pub vault: SystemAccount<'info>,
+
+    #[account(
+        seeds = [b"state", user.key().as_ref()],
+        bump = vault_state.vault_bump
+    )]
+
+    pub vault_state: Account<'info, VaultState>,
+    pub system_program: Program<'info, System>,
+}
+
+impl <'info> Close<'info> {
+    pub fn close(ctx:Context<Close>) -> Result<()> {
+        Ok(())
+    }
+}
 
 #[account]
 pub struct VaultState { // this macro doesnt consider the discriminator. do it manually.
