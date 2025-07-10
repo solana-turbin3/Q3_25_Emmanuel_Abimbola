@@ -17,6 +17,8 @@ pub struct Make <'info> {
     #[account(mut)]
     pub maker: Signer <'info>,
     
+    #[account(mut)]
+    pub taker: Signer <'info>,
     #[account(
         mut,
         mint::token_program = token_program,
@@ -41,7 +43,7 @@ pub struct Make <'info> {
         init,
         payer = maker,
         seeds = [b"escrow", maker.key().as_ref(), seed.to_le_bytes().as_ref()],
-        space = 8 + Escrow::INIT_SPACE,
+        space = Escrow::DISCRIMINATOR.len() + Escrow::INIT_SPACE,
         bump
     )]
     pub escrow: Account<'info, Escrow>,
@@ -53,20 +55,22 @@ pub struct Make <'info> {
         associated_token::authority = escrow,
     )]
     pub vault: InterfaceAccount<'info, TokenAccount>,
+    pub associated_token_program: Program<'info, AssociatedToken>,
     pub token_program: Interface <'info, TokenInterface>,
     pub system_program: Program<'info, System>
 
 }
 
 impl<'info> Make <'info> {
-    pub fn init_escrow(&mut self, seed: u64, receiver: u64, bumps: &MakeBumps) -> Result<()> {
+    pub fn init_escrow(&mut self, seed: u64, receive: u64, bumps: &MakeBumps) -> Result<()> {
         self.escrow.set_inner(
             Escrow {
                 seed,
                 maker: self.maker.key(),
                 mint_a: self.mint_a.key(),
                 mint_b: self.mint_b.key(),
-                receiver: self.vault.key(),
+                taker: self.taker.key(),
+                receive,
                 bump: bumps.escrow
             });
 
@@ -84,7 +88,7 @@ impl<'info> Make <'info> {
 
         let cpi_ctx = CpiContext::new(self.token_program.to_account_info(), transfer_accounts);
 
-        transfer_checked(cpi_ctx, deposit, self.mint_a.decimals);
+        transfer_checked(cpi_ctx, deposit, self.mint_a.decimals)?;
 
         Ok(())
     }
@@ -97,15 +101,15 @@ impl<'info> Make <'info> {
         };
         let close_account_cpi_ctx = CpiContext::new(self.token_program.to_account_info(), close_dem_account);
 
-        close_account(close_account_cpi_ctx);
+        close_account(close_account_cpi_ctx)?;
         Ok(())
     }
 
 }
-pub fn handler(ctx: Context<Make>) -> Result<()> {
-    msg!("Greetings from: {:?}", ctx.program_id);
-    Ok(())
-}
+// pub fn handler(ctx: Context<Make>) -> Result<()> {
+//     msg!("Greetings from: {:?}", ctx.program_id);
+//     Ok(())
+// }
 
 
 // Token2022 extensions allow for extended functions and features to be added.
@@ -113,3 +117,5 @@ pub fn handler(ctx: Context<Make>) -> Result<()> {
 // Every single lineof code is a vuln point
 
 // I learnt many new stuffs here. First off, each account serves a specific purpose. Secondly, the CPI is not for fancy. It actually plays a big role in fulfulling the transaction.
+
+
