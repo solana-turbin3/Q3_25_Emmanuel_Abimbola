@@ -29,4 +29,9 @@ I made it in guys.
 - Then came the first lesson, where I learnt a different implementation of encapsulating functions from @Shrinath.
 - Working on the tasks, and also pushing to git consistently.
 - The assignment on the capstone will continue in earnest.
+- Thereafter, I worked on making escrows. *In Solana, everything is an escrow, with a nice frontend*. I solidified my knowledge on this at the Saturday session with MacCana, and also by interacting with Berg on the sidelines after a particular class.
+- The last class of the week was pretty dense to take in all at once. We talked about AMMs and I was introduced to the concept of economics and how it is codified on-chain to create market makers.
+- Outside class hours, I spent additional hours trying to understand the concepts and rewatch the tutorials to gain mastery over them.
+- The evidence of my learning is in the gradual sophistication of my commits. Each commit differs from the previous one in awesome ways.
+- This is week 2, but it feels like I have been doing this for about 10 days.
 - - *Stay tuned for more updates...*
