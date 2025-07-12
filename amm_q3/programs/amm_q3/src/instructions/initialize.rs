@@ -5,9 +5,9 @@ use crate::state::Config;
 
 #[derive(Accounts)]
 //#[instructions(seed: u64)]
-pub struct Initialize {
+pub struct Initialize <'info> {
 
-    [account(mut)]
+    #[account(mut)]
     pub initializer: Signer<'info>,
     pub mint_x: Account<'info, Mint>,
     pub mint_y: Account<'info, Mint>,
@@ -17,7 +17,7 @@ pub struct Initialize {
         payer = initializer,
         seeds = [b"config", seed.to_le_bytes().as_ref],
         bump,
-        space = 8 + Config::INIT_SPACE,
+        space = Config::DISCRIMINATOR.len() + Config::INIT_SPACE,
     )]
     pub config: Account<'info, Config>,
     

@@ -1,8 +1,9 @@
-use anchor_lang::{prelude::*, init_if_needed};
-use anchor_spl::{associated::AssociatedToken, token::Mint, Token, TokenAccount};
+use anchor_lang::prelude::*;
+use anchor_spl::{associated_token::AssociatedToken, token::{Mint, Token, TokenAccount}};
 use constant_product_curve::ConstantProduct;
+// the library above was created by Dean. I will check it out now
 
-use crate::{state::Config};
+use crate::{state::Config, error::AmmError};
 
 #[derive(Accounts)]
 #[instruction(seed: u64)]
@@ -68,28 +69,29 @@ pub struct Deposit<'info> {
 
 impl<'info> Deposit<'info> {
 
-    pub fn deposit(
-        &mut self, 
-        amount: u64, 
-        max_x: u64, 
-        max_y: u64) -> Result<()> {
+    pub fn deposit(&mut self, amount: u64, max_x: u64, max_y: u64) -> Result<()> {
         require!(self.config.locked == false, AmmError::PoolLocked);
         require!(amount != 0, AmmError::InvalidAmount);
         
-
         let (x, y) = match self.mint_lp.supply == 0 && self.vault_x.amount == 0 && self.vault_y.amount == 0 {
             true => (max_x, max_y),
             false => {
-                let amount = ConstantProduct::xy_deposit_amounts_from_l(
+                let amount = ConstantProduct::xy_deposit_amounts_from_l{
                     x: self.vault_x.amount,
                     y: self.vault_y.amount,
                     l: self.mint_lp.supply,
                     a: amount,
-                precision: 6).unwrap();
+                precision: 6}.unwrap();
                 (amount.x, amount.y)
             }
         };
+
+        require!(x<=max_x && y<= max_y, AmmError::SlippageExceeded);
+        self.deposit_tokens(true, x);
+        self.deposit_tokens(false, y);
+        self.mint_tp_tokens(amount)
     }
+
     pub fn deposit_tokens(&mut self, is_x: bool, amount: u64) -> Result<()> {
         let (from, to) = match is_x {
             true => (self.user_x.to_account_info(), self.vault_x.to_account_info()),
@@ -116,6 +118,12 @@ impl<'info> Deposit<'info> {
             to: self.user_lp.to_account_info(),
             authority: self.config.to_account_info()
         };
+
+        let seeds = &[
+            &b"config"[..],
+            &self.config.seed.to_le_bytes(),
+            &[self.config_bump],
+        ];
         let signer_seeds = &[&seeds[..]];
         
         let ctx = CpiContext::new_with_signer(self.token_program, cpi_accounts, signer_seeds);
