@@ -3,12 +3,15 @@
 
 use anchor_lang::prelude::*;
 use anchor_lang::system_program::{{transfer, Transfer}};
+use anchor_spl::token::close_account::CloseAccount;
 
 declare_id!("FduhYm6BGGhZPLcmfNmiPFbgyytH3zhoDwZUJ7KLjZ5P");
 
 #[program]
 pub mod anchor_vault {
-    use crate::anchor_vault::__cpi_client_accounts_close::Close;
+    
+
+    // use crate::anchor_vault::__cpi_client_accounts_close::Close;
 
     use super::*;
 
@@ -23,7 +26,7 @@ pub mod anchor_vault {
         ctx.accounts.withdraw(amount)
     }
     pub fn close_account(ctx: Context<Close>) -> Result<()> {
-        ctx.accounts.close_account()
+        ctx.accounts.close_accounts()
     }
 
 #[derive(Accounts)]
@@ -137,26 +140,6 @@ impl<'info> Payment<'info> {
 
 }
 
-// #[derive(Accounts)]
-// pub struct Close <'info> {
-
-//     #[account(mut)]
-//     pub user: Signer<'info>,
-    
-//     #[account(
-//         seeds = [b"state", user.key().as_ref()],
-//         bump = vault_state.vault_bump
-//     )]
-//     pub vault_state: Account<'info, VaultState>,
-
-//     #[account(
-//         mut,
-//         seeds = [b"vault", vault_state.key().as_ref()],
-//         bump = vault_state.vault_bump
-//     )]    
-//     pub vault: SystemAccount<'info>,
-//     pub system_program: Program<'info, System>,
-// }
 
 #[derive(Accounts)]
 pub struct Close<'info> {
@@ -181,8 +164,15 @@ pub struct Close<'info> {
 }
 
 impl <'info> Close<'info> {
-    fn close_account (&mut self) -> Result<()> {
-        let cpi_account = Close 
+    fn close_accounts (&mut self) -> Result<()> {
+        let cpi_account = CloseAccount {
+            account: self.vault.to_account_info(),
+            destination: self.user.to_account_info(),
+            authority: self.user.to_account_info()
+        };
+        
+        let ctx = CpiContext::new(self.vault.to_account_info(), cpi_account);
+        close_account(ctx)?;
     // pub trait AccountsClose<'info>: ToAccountInfos<'info> {
     // fn close(&self, user: AccountInfo<'info>) -> Result<()>;}
     
