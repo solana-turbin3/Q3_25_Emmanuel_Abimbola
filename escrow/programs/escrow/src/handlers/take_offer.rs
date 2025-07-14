@@ -1,18 +1,29 @@
-use anchor_lang::{context, prelude::*};
+use anchor_lang::{prelude::*};
 use crate::error::ErrorCode;
 use anchor_spl::{
-    associated_token::AssociatedToken, token::TokenAccount, token_interface::{Mint, TokenInterface}
+    associated_token::AssociatedToken, token_interface::{Mint, TokenAccount,TokenInterface}
 };
+use crate::state::Offer;
+use crate::{transfer_tokens, close_token_account};
+
 
 #[derive(Accounts)]
+#[instruction(id: u64)]
 pub struct TakeOffer<'info> {
     // TakeOffer (in capitals) is a struct of names accounts that the
     // take_offer() function will use.
     pub associated_token_program: Program<'info, AssociatedToken>,
     pub token_program: Interface<'info, TokenInterface>,
     pub system_program: Program<'info, System>,
+    
+    #[account(mut)]
     pub taker: Signer<'info>,
+
+    
+    #[account(mint::token_program = token_program)]
     pub token_mint_a: InterfaceAccount<'info, Mint>,
+    
+    #[account(mint::token_program = token_program)]
     pub token_mint_b: InterfaceAccount<'info, Mint>,
 
     #[account(
@@ -36,8 +47,8 @@ pub struct TakeOffer<'info> {
 
         #[account(
         mut,
-        close = maker,
-        has_one = maker,
+        close = taker,
+        //has_one = taker,
         has_one = token_mint_b,
         seeds = [b"offer", offer.id.to_le_bytes().as_ref()],
         bump = offer.bump
@@ -46,7 +57,7 @@ pub struct TakeOffer<'info> {
 
     #[account(
         associated_token::mint = token_mint_b,
-        associated_token::authority = Offer,
+        associated_token::authority = offer,
         associated_token::token_program =token_program
     )]
     pub vault: InterfaceAccount<'info, TokenAccount>,
@@ -55,7 +66,12 @@ pub struct TakeOffer<'info> {
 // Handle the take offer instruction by:
 // 1. Sending the wanted tokens from the taker to the maker
 // 2. Withdrawing the offered tokens from the vault to the taker and closing the vault
-pub fn take_offer(context: Context<TakeOffer>) -> Result<()> {
+pub fn take_offer(
+    context: Context<TakeOffer>,
+    // id: u64,
+    // amount: u64,
+    // token_b_wanted_amount: u64 
+) -> Result<()> {
 
     let offer_account_seeds = &[
         b"offer",
@@ -66,7 +82,7 @@ pub fn take_offer(context: Context<TakeOffer>) -> Result<()> {
 
     transfer_tokens(
         &context.accounts.vault,       
-        &context.accounts.taker_token_account_a,
+        &context.accounts.taker_token_account_b,
         &context.accounts.vault.amount,       
         &context.accounts.token_mint_a,       
         &context.accounts.offer.to_account_info(),       
@@ -86,7 +102,7 @@ pub fn take_offer(context: Context<TakeOffer>) -> Result<()> {
     
     transfer_tokens(
         &context.accounts.taker_token_account_b,       
-        &context.accounts.maker_token_account_a,
+        &context.accounts.maker_token_account_b,
         &context.accounts.offer.token_b_wanted_amount,       
         &context.accounts.token_mint_b,       
         &context.accounts.taker.to_account_info(),       

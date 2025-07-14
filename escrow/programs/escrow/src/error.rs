@@ -13,4 +13,10 @@ pub enum ErrorCode {
 
     #[msg("Amount must be greater than zero")]
     InvalidAmount,
+
+    #[msg("Unable to initiate withdrawal. Check and try again.")]
+    FailedVaultWithdrawal,
+
+    #[msg("Vault could not close. Check your parameters and try again.")]
+    FailedVaultClosure,
 }
