@@ -437,7 +437,7 @@ describe("Escrow", () => {
         tokenBWantedAmount,
       });
 
-      const refundOfferInstruction = await programClient.getRefundOfferInstructionAsync({
+      const refundOfferInstruction = await programClient.getRefundOfferInstruction({
         maker: bob,
         tokenMintA,
         makerTokenAccountA: bobTokenAccountA,

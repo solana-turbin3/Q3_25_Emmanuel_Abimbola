@@ -68,6 +68,8 @@ pub struct TakeOffer<'info> {
 // 2. Withdrawing the offered tokens from the vault to the taker and closing the vault
 pub fn take_offer(
     context: Context<TakeOffer>,
+    // token_b_wanted_amount: u64,
+    //token_a_offered_amount: u64,
     // id: u64,
     // amount: u64,
     // token_b_wanted_amount: u64 

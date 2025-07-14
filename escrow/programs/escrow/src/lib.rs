@@ -28,6 +28,8 @@ pub mod escrow {
 
     pub fn take_offer(
         context: Context<TakeOffer>,
+        // token_b_wanted_amount: u64,
+        // token_a_offered_amount: u64,
     ) -> Result<()> {
         handlers::take_offer::take_offer(context)
     }
