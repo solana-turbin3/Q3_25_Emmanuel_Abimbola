@@ -1,9 +1,9 @@
 use anchor_lang::prelude::*;
-use anchor_spl::{associated_token::AssociatedToken, token::{Mint, Token, TokenAccount}};
+use anchor_spl::{associated_token::AssociatedToken, token::{MintTo, Mint, mint_to, Token, TokenAccount, transfer, Transfer}};
 use constant_product_curve::ConstantProduct;
 // the library above was created by Dean. I will check it out now
 
-use crate::{state::Config, error::AmmError};
+use crate::{error::AmmError, state::Config, InitializeBumps};
 
 #[derive(Accounts)]
 #[instruction(seed: u64)]
@@ -19,7 +19,7 @@ pub struct Deposit<'info> {
         seeds = [b"lp", config.key().as_ref()],
         bump,
     )]
-    pub mint_lp: Account<'info, Mint>,
+    pub config: Account<'info, Config>,
 
      #[account(
         mut,
@@ -46,7 +46,7 @@ pub struct Deposit<'info> {
     
     #[account(
         mut,
-        associated_token::mint = mint_y.,
+        associated_token::mint = mint_y,
         associated_token::authority = user
     )]
     pub user_y: Account<'info, TokenAccount>,
@@ -58,9 +58,8 @@ pub struct Deposit<'info> {
         associated_token::mint = mint_lp,
         associated_token::authority = user
     )]
-    pub user_lp: Account<'info, TokenAccount>,
+    pub mint_lp: Account<'info, TokenAccount>,
 
-    pub config: Account<'info, Config>,
     pub token_program: Program<'info, Token>,
     pub associated_token_program: Program<'info, AssociatedToken>,
     pub system_program: Program<'info, System>
@@ -69,7 +68,7 @@ pub struct Deposit<'info> {
 
 impl<'info> Deposit<'info> {
 
-    pub fn deposit(&mut self, amount: u64, max_x: u64, max_y: u64) -> Result<()> {
+    pub fn deposit(&mut self, amount: u64, max_x: u64, max_y: u64, bumps: &InitializeBumps) -> Result<()> {
         require!(self.config.locked == false, AmmError::PoolLocked);
         require!(amount != 0, AmmError::InvalidAmount);
         
@@ -79,8 +78,8 @@ impl<'info> Deposit<'info> {
                 let amount = ConstantProduct::xy_deposit_amounts_from_l{
                     x: self.vault_x.amount,
                     y: self.vault_y.amount,
-                    l: self.mint_lp.supply,
-                    a: amount,
+                    l: self.mint_lp.amount,
+                    fee: amount,
                 precision: 6}.unwrap();
                 (amount.x, amount.y)
             }
@@ -89,7 +88,7 @@ impl<'info> Deposit<'info> {
         require!(x<=max_x && y<= max_y, AmmError::SlippageExceeded);
         self.deposit_tokens(true, x);
         self.deposit_tokens(false, y);
-        self.mint_tp_tokens(amount)
+        self.mint_lp_tokens(amount)
     }
 
     pub fn deposit_tokens(&mut self, is_x: bool, amount: u64) -> Result<()> {
@@ -126,7 +125,7 @@ impl<'info> Deposit<'info> {
         ];
         let signer_seeds = &[&seeds[..]];
         
-        let ctx = CpiContext::new_with_signer(self.token_program, cpi_accounts, signer_seeds);
+        let ctx = CpiContext::new_with_signer(cpi_program, cpi_accounts, signer_seeds);
         mint_to(ctx, amount)
     }
 }

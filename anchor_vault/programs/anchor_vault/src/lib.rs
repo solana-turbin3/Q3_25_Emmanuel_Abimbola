@@ -2,13 +2,15 @@
 #![allow(deprecated)]
 
 use anchor_lang::prelude::*;
-use anchor_lang::system_program::{{transfer, Transfer}};
+use anchor_lang::system_program::{transfer, Transfer};
 
 declare_id!("FduhYm6BGGhZPLcmfNmiPFbgyytH3zhoDwZUJ7KLjZ5P");
 
 #[program]
 pub mod anchor_vault {
-    use crate::anchor_vault::__cpi_client_accounts_close::Close;
+    
+
+    // use crate::anchor_vault::__cpi_client_accounts_close::Close;
 
     use super::*;
 
@@ -22,8 +24,8 @@ pub mod anchor_vault {
     pub fn withdraw(ctx: Context<Payment>, amount: u64) -> Result<()> {
         ctx.accounts.withdraw(amount)
     }
-    pub fn close_account(ctx: Context<Close>) -> Result<()> {
-        ctx.accounts.close_account()
+    pub fn close_account(ctx: Context<Close>, amount: u64) -> Result<()> {
+        ctx.accounts.close_accounts(amount)
     }
 
 #[derive(Accounts)]
@@ -137,26 +139,6 @@ impl<'info> Payment<'info> {
 
 }
 
-// #[derive(Accounts)]
-// pub struct Close <'info> {
-
-//     #[account(mut)]
-//     pub user: Signer<'info>,
-    
-//     #[account(
-//         seeds = [b"state", user.key().as_ref()],
-//         bump = vault_state.vault_bump
-//     )]
-//     pub vault_state: Account<'info, VaultState>,
-
-//     #[account(
-//         mut,
-//         seeds = [b"vault", vault_state.key().as_ref()],
-//         bump = vault_state.vault_bump
-//     )]    
-//     pub vault: SystemAccount<'info>,
-//     pub system_program: Program<'info, System>,
-// }
 
 #[derive(Accounts)]
 pub struct Close<'info> {
@@ -173,6 +155,8 @@ pub struct Close<'info> {
     pub vault: SystemAccount<'info>,
 
     #[account(
+        mut,
+        close = user,
         seeds = [b"state", user.key().as_ref()],
         bump = vault_state.vault_bump
     )]
@@ -181,8 +165,15 @@ pub struct Close<'info> {
 }
 
 impl <'info> Close<'info> {
-    fn close_account (&mut self) -> Result<()> {
-        let cpi_account = Close 
+    fn close_accounts (&mut self, amount: u64) -> Result<()> {
+        let cpi_program = self.system_program.to_account_info();
+        let cpi_account = Transfer {
+            from: self.vault.to_account_info(),
+            to: self.user.to_account_info()
+        };
+        
+        let ctx = CpiContext::new(cpi_program, cpi_account);
+        transfer(ctx, amount)?;
     // pub trait AccountsClose<'info>: ToAccountInfos<'info> {
     // fn close(&self, user: AccountInfo<'info>) -> Result<()>;}
     
