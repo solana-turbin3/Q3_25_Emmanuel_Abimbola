@@ -34,4 +34,8 @@ I made it in guys.
 - Outside class hours, I spent additional hours trying to understand the concepts and rewatch the tutorials to gain mastery over them.
 - The evidence of my learning is in the gradual sophistication of my commits. Each commit differs from the previous one in awesome ways.
 - This is week 2, but it feels like I have been doing this for about 10 days.
+- I submitted my letter of intent a day ahead of the deadline. I am now onto putting it all to work.
+
+## Week 3 
 - - *Stay tuned for more updates...*
+
