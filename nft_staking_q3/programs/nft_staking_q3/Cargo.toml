@@ -1,27 +1,22 @@
 [package]
-name = "amm_q3"
+name = "nft_staking_q3"
 version = "0.1.0"
 description = "Created with Anchor"
 edition = "2021"
 
 [lib]
 crate-type = ["cdylib", "lib"]
-name = "amm_q3"
+name = "nft_staking_q3"
 
 [features]
 default = []
 cpi = ["no-entrypoint"]
 no-entrypoint = []
-init_if_needed = [ ]
 no-idl = []
 no-log-ix-name = []
 idl-build = ["anchor-lang/idl-build", "anchor-spl/idl-build"]
 
 
 [dependencies]
-anchor-lang = {version = "0.31.1", features = ["init_if_needed"] }
+anchor-lang = {version = "0.31.1", features = ["init_if_needed"]}
 anchor-spl = "0.31.1"
-constant-product-curve = { git = "https://github.com/deanmlittle/constant-product-curve.git" }
-
-[dev-dependencies]
-litesvm = "0.6.1"
