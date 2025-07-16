@@ -16,6 +16,6 @@ pub mod nft_staking_q3 {
     use super::*;
 
     pub fn initialize(ctx: Context<Initialize>) -> Result<()> {
-        initialize::handler(ctx)
+        init_config::handler(ctx)
     }
 }

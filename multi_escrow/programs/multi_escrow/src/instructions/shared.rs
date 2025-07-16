@@ -21,17 +21,15 @@ pub fn tokens_transfer <'info> (
 
     let signer_seeds = seed_owners.map(|seeds| [seeds]);
 
-    transfer_checked(
-        if let Some(seeds_array) = signer_seeds.as_ref() {
+    let cpi_ctx = if let Some(seeds_array) = signer_seeds.as_ref() {
             CpiContext::new_with_signer(
                 token_program.to_account_info(),
                 transfer_accounts,
-                seeds_array,
+                signer_seeds,
             )
         } else {
             CpiContext::new(token_program.to_account_info(), transfer_accounts)
-        }, *amount, mint.decimals,
-    );
+        };
 
-    Ok(())
+        transfer_checked(cpi_ctx, amount, mint.decimals)?;
 }
