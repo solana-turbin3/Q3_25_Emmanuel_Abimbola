@@ -3,9 +3,9 @@ anchor_lang::prelude::*;
 #[account]
 #[derive(InitSpace)]
 pub struct ConfigState {
-    pub pts_p_stk: u8,
-    pub max_stk: u8,
-    pub frz_prd: u32,
-    pub rwd_bmp: u8,
-    pub bmp: u8,
+    pub points_per_stake: u8,
+    pub max_staked: u8,
+    pub freeze_period: u32,
+    pub reward_bump: u8,
+    pub bump: u8,
 }
