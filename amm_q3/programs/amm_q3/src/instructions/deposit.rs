@@ -1,4 +1,5 @@
-use anchor_lang::prelude::*;
+use anchor_lang::prelude::{*};
+use anchor_lang::init_if_needed;
 use anchor_spl::{associated_token::AssociatedToken, token::{MintTo, Mint, mint_to, Token, TokenAccount, transfer, Transfer}};
 use constant_product_curve::ConstantProduct;
 // the library above was created by Dean. I will check it out now
@@ -55,10 +56,11 @@ pub struct Deposit<'info> {
     #[account(
         init_if_needed,
         payer = user,
+        associated_token::token_program = token_program,
         associated_token::mint = mint_lp,
         associated_token::authority = user
     )]
-    pub mint_lp: Account<'info, TokenAccount>,
+    pub user_lp: Account<'info, TokenAccount>,
 
     pub token_program: Program<'info, Token>,
     pub associated_token_program: Program<'info, AssociatedToken>,
