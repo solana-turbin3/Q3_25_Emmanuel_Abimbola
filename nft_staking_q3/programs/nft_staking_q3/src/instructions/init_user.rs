@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 
-use crate::ConfigState;
+use crate::state::{user_account, StakeConfig, UserAccount};
 
 #[derive(Accounts)]
 pub struct InitUser <'info> {
@@ -9,24 +9,24 @@ pub struct InitUser <'info> {
     pub token_program: Program<'info, Token>,
 
     #[account(mut)]
-    pub usr: Signer<'info>,
+    pub user: Signer<'info>,
 
     #[account(
         init,
-        payer = usr,
-        seeds = [b"usr", usr.key.as_ref()],
+        payer = user,
+        seeds = [b"user", user.key.as_ref()],
         bump,
-        space = AccountUser::DISCRIMINATOR.to_len() + AccountUser::INIT_SPACE,
+        space = UserAccount::DISCRIMINATOR.to_len() + UserAccount::INIT_SPACE,
     )]
-    pub usr_acct: Account<'info, AccountUser>,
+    pub user_account: Account<'info, UserAccount>,
 }
 
-impl<'info> InitUsr <'info> {
-    pub fn init_usr(&mut self, bumps: &InitializeUsrBumps) -> Result<()> {
-        self.user_acct.set_inner(AccountUser {
-            pts: 0,
-            amt_stkd: 0,
-            bump: bumps.usr_acct,
+impl<'info> InitUser <'info> {
+    pub fn init_user(&mut self, bumps: &InitializeUserBumps) -> Result<()> {
+        self.user_acct.set_inner(UserAccount {
+            points: 0,
+            amount_staked: 0,
+            bump: user_account.bump,
         });
         Ok(())
     }

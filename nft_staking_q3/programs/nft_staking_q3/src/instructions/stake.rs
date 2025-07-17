@@ -18,7 +18,7 @@ use anchor_spl::{
     },
 };
 
-use crate::StakeAcct;
+use crate::state::StakeAccount;
 
 #[derive(Accounts)]
 pub struct Stake<'info> {
@@ -40,7 +40,7 @@ pub struct Stake<'info> {
         seeds = [b"user".as_ref(), user.key().as_ref()]
         bump = user_acct.bump,
     )]
-    pub user_account: Account<'info, StakeAcct>,
+    pub user_account: Account<'info, StakeAccount>,
     #[account(
         seeds = [b"metadata", metadata_program.key().as_ref(), mint.key().as_ref()],
         seeds::program = metadata_program.key(),
@@ -70,10 +70,10 @@ pub struct Stake<'info> {
     #[account(
         init,
         payer = user,
-        space = StakeAcct::DISCRIMINATOR.to_len() + StakeAcct::INIT_SPACE,
+        space = StakeAccount::DISCRIMINATOR.to_len() + StakeAccount::INIT_SPACE,
         seeds = [b"stake".as_ref(), mint.key().as_ref(), config.key().as_ref()],
     )]
-    pub stake_account: Account<'info, StakeAcct>,
+    pub stake_account: Account<'info, StakeAccount>,
     pub metadata_program: Account<'info, Metadata>,
     pub system_program: Program<'info, Program>,
     pub token_program: Program<'info, Token>
@@ -83,7 +83,7 @@ impl<'info> Stake <'info> {
     pub fn stake(&mut self, bump: &StakeBumps) -> Result<()> {
         assert!(self.user_acct.amount_staked < self.config.max_stake);
 
-        self.stake_account.set_inner(StakeAcct {
+        self.stake_account.set_inner(StakeAccount {
             owner: self.user.key(),
             mint: self.mint.key(),
             staked_at: Clock::get().unix_timestamp,
@@ -116,6 +116,7 @@ impl<'info> Stake <'info> {
         let token_program = &self.token_program.to_account_info();
         let metadata_program = &self.metadata_program.to_account_info();
         let metadata_program = &self.metadata_program.to_account_info();
+        // all the accounts are necessary for the Freeze... to function
 
         FreezeDelegatedAccountCpi::new(
             metadata_program,
@@ -127,10 +128,14 @@ impl<'info> Stake <'info> {
                 token_program
             }
         ).invoke_signed(signer_seeds)?;
-        //what does invode_signed do here???
+        //what does invoke_signed do here???
 
         self.user_account.amount_staked += 1;
 
         Ok(())
     }
 }
+
+// all the functions work to >> have the user stake assets.
+// quite similar to tokenTransfer. The only difference is the NFTs..
+// the User gives a 3rdParty ability to perform txns on their behalf (DELEGATING)
