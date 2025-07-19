@@ -6,7 +6,7 @@ use anchor_spl::{
     token::{mint_to, transfer, MintTo, Mint, Transfer, Token, TokenAccount}
 };
 use constant_product_curve::ConstantProduct;
-use crate::{error::*, state::Config};
+use crate::{error::*, state::config::*};
 
 #[derive(Accounts)]
 // #[instruction(seed: u64)]

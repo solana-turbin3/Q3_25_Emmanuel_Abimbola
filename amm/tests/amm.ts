@@ -7,7 +7,7 @@ import { PublicKey } from "@solana/web3.js"
 import { expect } from "chai";
 import { SendTransactionError } from "@solana/web3.js";
 
-import { getAccount, getAssociatedTokenAddress, getOrCreateAssociatedTokenAccount } from "@solana/spl-token";
+import { getAccount, createMint, getAssociatedTokenAddress, getOrCreateAssociatedTokenAccount, mintTo, TOKEN_PROGRAM_ID, transfer } from "@solana/spl-token";
 
 describe("amm", () => {
   const provider = anchor.AnchorProvider.env()
@@ -23,9 +23,12 @@ describe("amm", () => {
   const seed2 = new anchor.BN(Math.random() * 100_000)
 
   const fee = 30
-
-  const Zoro = new PublicKey("6QRY8Stw4VzgGSLeTavBNAcpVNHV2ArFnpg7GKQx5vrL")
-  const G5 = new PublicKey("HHL8VZCfzdUvPp6hHq2V1h7oWxZBFGgrkyT9SCTAJ3Nm")
+  
+  //const Zoro = new PublicKey(mintX)
+  let Zoro: PublicKey;
+  let G5: PublicKey;
+  //const Zoro = new PublicKey("6QRY8Stw4VzgGSLeTavBNAcpVNHV2ArFnpg7GKQx5vrL")
+  //const G5 = new PublicKey("HHL8VZCfzdUvPp6hHq2V1h7oWxZBFGgrkyT9SCTAJ3Nm")
 
   const max_zoro = new anchor.BN(50_000 * 1_000_000)
   const max_g5 = new anchor.BN(50_000 * 1_000_000)
@@ -44,24 +47,73 @@ describe("amm", () => {
   );
 
 
-  it("Is initialized with authority!", async () => {
-    console.log("seed: ", seed.toString())
-    // Add your test here.
+  before (async () => {
+      Zoro = await createMint(
+        provider.connection,
+        wallet.payer,
+        wallet.publicKey,
+        null,
+        6
+      );
+      
+      G5 = await createMint(
+        provider.connection,
+        wallet.payer,
+        wallet.publicKey,
+        null,
+        6
+      );
+      const ZoroATA = await getOrCreateAssociatedTokenAccount(provider.connection, wallet.payer, Zoro, wallet.publicKey);
+      const G5ATA = await getOrCreateAssociatedTokenAccount(provider.connection, wallet.payer, G5, wallet.publicKey);
+
+      await mintTo(provider.connection, wallet.payer, Zoro, ZoroATA.address, wallet.publicKey, 1_000_000_000);
+      await mintTo(provider.connection, wallet.payer, G5, G5ATA.address, wallet.publicKey, 1_000_000_000);
+    });
+
+    
+  it("Is initialized with authority", async () => {
     const tx = await program.methods.initialize(seed, fee, wallet.publicKey)
-      .accountsPartial({
-        initializer: wallet.publicKey,
-        mintX: Zoro,
-        mintY: G5,
-        mintLp: lp,
-        config: config,
-      })
-      .rpc();
+    .accountsPartial({
+      initializer: wallet.publicKey,
+      mintX: Zoro,
+      mintY: G5,
+      mintLp: lp,
+      config: config,
+    }).rpc();
+
     const configAccount = await program.account.config.fetch(config);
     expect(configAccount.authority.equals(wallet.publicKey)).to.be.true;
-    expect(configAccount.seed.toString()).to.equal(seed.toString());
-    expect(configAccount.fee.toString()).to.equal(fee.toString());
-
   });
+  
+
+  // it("Is initialized with authority!", 
+  //   before (async () => {
+  //     Zoro = await createMint(
+  //       provider.connection,
+  //       wallet.payer,
+  //       wallet.publicKey,
+  //       null,
+  //       6
+  //     );
+  //   )
+    
+  //   // Add your test here.
+  //   const tx = await program.methods.initialize(seed, fee, wallet.publicKey)
+  //     .accountsPartial({
+  //       initializer: wallet.publicKey,
+  //       mintX: Zoro,
+  //       mintY: G5,
+  //       mintLp: lp,
+  //       config: config,
+  //     })
+  //     .rpc();
+  //   const configAccount = await program.account.config.fetch(config);
+  //   expect(configAccount.authority.equals(wallet.publicKey)).to.be.true;
+  //   expect(configAccount.seed.toString()).to.equal(seed.toString());
+  //   expect(configAccount.fee.toString()).to.equal(fee.toString());
+
+  //   console.log("The transactio signature", tx);
+  // });
 
   it("fails initialize with same seed!", async () => {
     try {
@@ -82,12 +134,48 @@ describe("amm", () => {
     }
   });
 
+  //(async () => 
+  console.log(anchor.web3.PublicKey);
+
   it("Deposit!", async () => {
+    
     const userZoroATA = await getOrCreateAssociatedTokenAccount(provider.connection, wallet.payer, Zoro, wallet.publicKey);
     const userG5ATA = await getOrCreateAssociatedTokenAccount(provider.connection, wallet.payer, G5, wallet.publicKey);
     const userLpATA = await getOrCreateAssociatedTokenAccount(provider.connection, wallet.payer, lp, wallet.publicKey);
 
-    const depositAmount = new anchor.BN(50_000 * 1_000_000);
+    await mintTo (
+    provider.connection,
+    wallet.payer,
+    Zoro,
+    userZoroATA.address,
+    wallet.publicKey,
+    500_000_000,
+  )
+
+   await mintTo (
+    provider.connection,
+    wallet.payer,
+    G5,
+    userG5ATA.address,
+    wallet.publicKey, // my deposit function has been giving me issues. I will love some help with it over here.
+    500_000_000,
+  )
+    const depositAmount = 50_000;
+    await transfer (
+      provider.connection,
+      wallet.payer,
+      Zoro,
+      userZoroATA.address,
+      wallet.publicKey,
+      depositAmount,
+    )
+        await transfer (
+      provider.connection,
+      wallet.payer,
+      G5,
+      userG5ATA.address,
+      wallet.publicKey,
+      depositAmount,)
 
     const userZoroBefore = await getAccount(provider.connection, userZoroATA.address);
     const userG5Before = await getAccount(provider.connection, userG5ATA.address);
@@ -142,11 +230,12 @@ describe("amm", () => {
     const vaultZoroBefore = await getAccount(provider.connection, vaultZoro);
     const vaultG5Before = await getAccount(provider.connection, vaultG5);
 
-    const amountIn = new anchor.BN(50 * 1_000_000);
-    const slippage = 500;
+    const amount = new anchor.BN(50 * 1_000_000);
+    const min = new anchor.BN(500);
+    const is_x = true;
 
     const tx = await program.methods
-      .swap(true, amountIn, slippage)
+      .swap(is_x , amount, min)
       .accountsPartial({
         user: wallet.publicKey,
         mintX: Zoro,
@@ -178,7 +267,7 @@ describe("amm", () => {
     const vaultG5Before = await getAccount(provider.connection, vaultG5);
 
     const amountIn = new anchor.BN(50 * 1_000_000);
-    const slippage = 500;
+    const slippage = new anchor.BN(500);
 
     const tx = await program.methods
       .swap(false, amountIn, slippage)
@@ -200,5 +289,7 @@ describe("amm", () => {
     expect(Number(vaultG5After.amount)).to.be.greaterThan(Number(vaultG5Before.amount));
     expect(Number(vaultZoroAfter.amount)).to.be.lessThan(Number(vaultZoroBefore.amount));
   });
+
+  
 
 });

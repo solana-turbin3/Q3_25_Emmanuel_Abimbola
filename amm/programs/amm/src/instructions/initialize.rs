@@ -13,20 +13,7 @@ pub struct Initialize<'info> {
     #[account(mut)]
     pub initializer: Signer<'info>,
 
-    #[account(
-        init,
-        payer = initializer,
-        mint::decimals = 6,
-        mint::authority = config
-    )]
     pub mint_x: Account<'info, Mint>,
-
-    #[account(
-        init,
-        payer = initializer,
-        mint::decimals = 6,
-        mint::authority = config
-    )]
     pub mint_y: Account<'info, Mint>,
 
     #[account(
