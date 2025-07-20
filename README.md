@@ -37,5 +37,11 @@ I made it in guys.
 - I submitted my letter of intent a day ahead of the deadline. I am now onto putting it all to work.
 
 ## Week 3 
+- This would easily be marked as the most stress free, yet mentally challenging week of the program so far for me.
+- I began the User_Stories task quite early. This led me on the path to developing FairPlay Protocol. There are many unanswered subsections that I will have to cater to.
+- I attended the solA classes this week, and reviewed the solB at later times because of hectic daily schedules.
+- Working on the NFT marketplace. More implementation coming soon.
+- My main takeaway from the week's classes is to view my project from a User's standpoint. Code is beautiful, but it is worse when no one uses your code.
+- I went ahead to create an X account for the project, and started doing some brief branding for it. 
 - - *Stay tuned for more updates...*
 
