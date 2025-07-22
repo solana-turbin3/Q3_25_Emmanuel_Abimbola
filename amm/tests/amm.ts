@@ -164,17 +164,19 @@ describe("amm", () => {
     await transfer (
       provider.connection,
       wallet.payer,
-      Zoro,
       userZoroATA.address,
-      wallet.publicKey,
+      userLpATA.address,
+      // wallet.publicKey,
+      Zoro,
       depositAmount,
     )
         await transfer (
       provider.connection,
       wallet.payer,
-      G5,
       userG5ATA.address,
-      wallet.publicKey,
+      userLpATA.address,
+      //wallet.publicKey,
+      G5,
       depositAmount,)
 
     const userZoroBefore = await getAccount(provider.connection, userZoroATA.address);
@@ -187,7 +189,7 @@ describe("amm", () => {
         mintY: G5,
         mintLp: lp,
         config: config,
-      })
+      }).signers([wallet.payer])
       .rpc();
     const userZoroAfter = await getAccount(provider.connection, userZoroATA.address);
     const userG5After = await getAccount(provider.connection, userG5ATA.address);
@@ -198,6 +200,8 @@ describe("amm", () => {
     expect(Number(userLpAfter.amount)).to.be.greaterThan(Number(userLpBefore.amount));
 
   });
+// Check what accounts your deposit instruction needs
+console.log("Deposit instruction accounts:", program.idl.instructions.find(ix => ix.name === 'deposit').accounts);
   it("fails to deposit invalid amount!", async () => {
     const depositAmount = new anchor.BN(0);
 

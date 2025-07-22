@@ -13,11 +13,10 @@ default = []
 cpi = ["no-entrypoint"]
 no-entrypoint = []
 no-idl = []
-init_if_needed = []
 no-log-ix-name = []
 idl-build = ["anchor-lang/idl-build", "anchor-spl/idl-build"]
 
 
 [dependencies]
-anchor-lang = "0.31.1"
-anchor-spl = "0.31.1"
+anchor-lang = {version = "0.31.1", features = ["init-if-needed"]}
+anchor-spl = {version = "0.31.1", features = ["metadata"]}

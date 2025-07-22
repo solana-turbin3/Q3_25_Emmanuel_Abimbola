@@ -1,7 +1,6 @@
 use anchor_lang::prelude::*;
-
 use anchor_spl::{
-    metadata::{
+    metadata_program::{
         mpl_token_metadata::instructions::{
             FreezeDelegatedAccountCpi,
             FreezeDelegatedAccountCpiAccounts
@@ -18,7 +17,8 @@ use anchor_spl::{
     },
 };
 
-use crate::state::StakeAccount;
+use crate::{state::StakeAccount, StakeConfig};
+use crate::state::UserAccount;
 
 #[derive(Accounts)]
 pub struct Stake<'info> {
@@ -36,11 +36,10 @@ pub struct Stake<'info> {
 
 
     #[account(
-        
-        seeds = [b"user".as_ref(), user.key().as_ref()]
-        bump = user_acct.bump,
+        seeds = [b"user".as_ref(), user.key().as_ref()],
+        bump = user_account.bump,
     )]
-    pub user_account: Account<'info, StakeAccount>,
+    pub user_account: Account<'info, UserAccount>,
     #[account(
         seeds = [b"metadata", metadata_program.key().as_ref(), mint.key().as_ref()],
         seeds::program = metadata_program.key(),
@@ -60,33 +59,33 @@ pub struct Stake<'info> {
     pub edition: Account<'info, MasterEditionAccount>, // the masterEdition proves non-fungibility of the asset. That's why we use it. Means no one can mint other supplies of it... What's the alternative???
 
      #[account(
-        init,
-        payer = administrator,
-        seeds = [b"buhari".as_ref()],
+        seeds = [b"config"],
         bump = config.bump,
     )]
-    pub config: Account <'info, ConfigState>,
+    pub config: Account <'info, StakeConfig>,
 
     #[account(
         init,
         payer = user,
-        space = StakeAccount::DISCRIMINATOR.to_len() + StakeAccount::INIT_SPACE,
+        space = StakeAccount::DISCRIMINATOR.len() + StakeAccount::INIT_SPACE,
         seeds = [b"stake".as_ref(), mint.key().as_ref(), config.key().as_ref()],
+        bump
     )]
     pub stake_account: Account<'info, StakeAccount>,
     pub metadata_program: Account<'info, Metadata>,
-    pub system_program: Program<'info, Program>,
-    pub token_program: Program<'info, Token>
+    pub system_program: Program<'info, System>,
+    pub token_program: Program<'info, Token>,
+    //pub clock: Sysvar<'info, Clock>
 }
 
 impl<'info> Stake <'info> {
     pub fn stake(&mut self, bump: &StakeBumps) -> Result<()> {
-        assert!(self.user_acct.amount_staked < self.config.max_stake);
+        assert!(self.user_account.amount_staked < self.config.max_staked);
 
         self.stake_account.set_inner(StakeAccount {
             owner: self.user.key(),
             mint: self.mint.key(),
-            staked_at: Clock::get().unix_timestamp,
+            staked_at: Clock::get()?.unix_timestamp,
             bump: bump.stake_account
         });
 

@@ -16,7 +16,7 @@ pub mod nft_staking_q3 {
     use super::*;
 
     pub fn init_config(
-        ctx: Context<Initialize>,
+        ctx: Context<InitializeConfig>,
         points_per_stake: u8, 
         max_staked: u8, 
         freeze_period: u8
