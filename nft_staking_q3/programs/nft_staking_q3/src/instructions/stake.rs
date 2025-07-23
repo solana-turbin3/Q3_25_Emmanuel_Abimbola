@@ -1,12 +1,13 @@
+#![allow(unexpected_cfgs)]
 use anchor_lang::prelude::*;
 use anchor_spl::{
-    metadata_program::{
+    metadata::{
         mpl_token_metadata::instructions::{
             FreezeDelegatedAccountCpi,
             FreezeDelegatedAccountCpiAccounts
         },
         MasterEditionAccount,
-        Metadata,
+        //Metadata,
         MetadataAccount,
     },
     token::{
@@ -72,7 +73,7 @@ pub struct Stake<'info> {
         bump
     )]
     pub stake_account: Account<'info, StakeAccount>,
-    pub metadata_program: Account<'info, Metadata>,
+    pub metadata_program: Account<'info, MetadataAccount>,
     pub system_program: Program<'info, System>,
     pub token_program: Program<'info, Token>,
     //pub clock: Sysvar<'info, Clock>
@@ -113,7 +114,6 @@ impl<'info> Stake <'info> {
         let edition = &self.edition.to_account_info();
         let mint = &self.mint.to_account_info();
         let token_program = &self.token_program.to_account_info();
-        let metadata_program = &self.metadata_program.to_account_info();
         let metadata_program = &self.metadata_program.to_account_info();
         // all the accounts are necessary for the Freeze... to function
 

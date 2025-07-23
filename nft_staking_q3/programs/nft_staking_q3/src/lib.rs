@@ -1,3 +1,4 @@
+#![allow(unexpected_cfgs)]
 pub mod constants;
 pub mod error;
 pub mod instructions;
@@ -15,33 +16,35 @@ declare_id!("9Fz4DyJq7Dn8EgbYnzd9W5AzzCtLMQSyHZqskK5AgVZf");
 pub mod nft_staking_q3 {
     use super::*;
 
-    pub fn init_config(
+    pub fn initialize_config(
         ctx: Context<InitializeConfig>,
         points_per_stake: u8, 
         max_staked: u8, 
-        freeze_period: u8
+        freeze_period: i64, 
+        reward_bump: u8, 
+        bump: u8,
     ) -> Result<()> {
-        init_config::handler(ctx, points_per_stake, max_staked, freeze_period)
+        init_config::handler(ctx, points_per_stake, max_staked, freeze_period, reward_bump, bump)
     }
 
     pub fn init_user(
-        ctx: Context<Initialize>,
+        ctx: Context<InitUser>,
         bump: u8
     ) -> Result<()> {
-        init_config::handler(ctx, bump)
+        init_user::handler(ctx, bump)
     }
     
     pub fn stake(
-        ctx: Context<Initialize>,
+        ctx: Context<Stake>,
         bump: u8
     ) -> Result<()> {
         stake::handler(ctx, bump)
     }
 
     pub fn unstake(
-        ctx: Context<Initialize>
+        ctx: Context<Unstake>
     ) -> Result<()> {
-        stake::handler(ctx)
+        unstake::handler(ctx)
     }
 
 }

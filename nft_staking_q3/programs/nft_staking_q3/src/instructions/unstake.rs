@@ -1,12 +1,13 @@
+#![allow(unexpected_cfgs)]
 use anchor_lang::prelude::*;
 use anchor_spl::{
     metadata::{
         mpl_token_metadata::instructions::{
             ThawDelegatedAccountCpi, 
-            ThawDelegatedAccountCpiAccounts
+            //ThawDelegatedAccountCpiAccounts
         },
         MasterEditionAccount,
-        Metadata,
+        //Metadata,
         MetadataAccount,
     },
     token::{
@@ -42,15 +43,12 @@ pub struct Unstake<'info> {
         seeds = [b"user".as_ref(), user.key().as_ref()],
         bump = user_account.bump,
     )]
-    pub user_account: Account<'info, StakeAccount>,
+    pub user_account: Account<'info, UserAccount>,
 
     #[account(
         seeds = [b"edition", b"metadata", metadata_program.key().as_ref(), mint.key().as_ref()], // why do we need both?
         seeds::program = metadata_program.key(),
         bump,
-        metadata_program::masterEdition
-
-
     )]
     pub edition: Account<'info, MasterEditionAccount>, // the masterEdition proves non-fungibility of the asset. That's why we use it. Means no one can mint other supplies of it... What's the alternative???
 
@@ -68,16 +66,16 @@ pub struct Unstake<'info> {
         
     )]
     pub stake_account: Account<'info, StakeAccount>, //use same convention
-    pub metadata_program: Account<'info, Metadata>,
-    pub system_program: Program<'info, Program>,
+    pub metadata_program: Account<'info, MetadataAccount>,
+    pub system_program: Program<'info, System>,
     pub token_program: Program<'info, Token>
 }
 
 impl<'info> Unstake <'info> {
     pub fn unstake(&mut self) -> Result<()> {
-        let time_elapsed = ((Clock::get()?.unix_timestamp*self.stake_account.staked_at)/86400);
+        let time_elapsed = (Clock::get()?.unix_timestamp*self.stake_account.staked_at)/86400;
         require!(time_elapsed>self.config.freeze_period, StakeError::TimeElapsedError);
-        self.user_account.points +=(self.config.points_per_stake as u32)*time_elapsed;
+        self.user_account.points +=(self.config.points_per_stake as i64)*time_elapsed;
 
         let seeds = &[
             &[b"stake",
@@ -88,13 +86,11 @@ impl<'info> Unstake <'info> {
         let signer_seeds = &[&seeds[..]];
 
         let program = self.token_program.to_account_info();
-
         let delegate = &self.stake_account.to_account_info();
         let token_account = &self.mint_ata.to_account_info();
         let mint = &self.mint.to_account_info();
         let edition = &self.stake_account.to_account_info();
-        let delegate = &self.stake_account.to_account_info();
-
+        
         ThawDelegatedAccountCpi::new(&self.metadata_program.to_account_info(), (delegate, token_account, mint, token_program, edition).invoke_signed(signer_seeds));
         let account = Revoke{
             source: self.mint_ata.to_account_info(),
