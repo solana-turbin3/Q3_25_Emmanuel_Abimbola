@@ -1,12 +1,13 @@
+#![allow(unexpected_cfgs)]
 use anchor_lang::prelude::*;
 use anchor_spl::{
     metadata::{
         mpl_token_metadata::instructions::{
             ThawDelegatedAccountCpi, 
-            ThawDelegatedAccountCpiAccounts
+            //ThawDelegatedAccountCpiAccounts
         },
         MasterEditionAccount,
-        Metadata,
+        //Metadata,
         MetadataAccount,
     },
     token::{
@@ -17,7 +18,9 @@ use anchor_spl::{
     },
 };
 
-use crate::StakeAcct;
+
+use crate::StakeConfig;
+use crate::StakeAccount;
 
 #[derive(Accounts)]
 pub struct Unstake<'info> {
@@ -37,10 +40,10 @@ pub struct Unstake<'info> {
 
     #[account(
         mut,
-        seeds = [b"user".as_ref(), user.key().as_ref()]
-        bump = user_acct.bump,
+        seeds = [b"user".as_ref(), user.key().as_ref()],
+        bump = user_account.bump,
     )]
-    pub user_account: Account<'info, StakeAcct>,
+    pub user_account: Account<'info, UserAccount>,
 
     #[account(
         seeds = [b"edition", b"metadata", metadata_program.key().as_ref(), mint.key().as_ref()], // why do we need both?
@@ -53,29 +56,51 @@ pub struct Unstake<'info> {
         seeds = [b"buhari".as_ref()],
         bump = config.bump,
     )]
-    pub config: Account <'info, ConfigState>,
+    pub config: Account <'info, StakeConfig>,
 
     #[account(
-        // space = StakeAcct::DISCRIMINATOR.to_len() + StakeAcct::INIT_SPACE, // not needed here
+        // space = StakeAccount::DISCRIMINATOR.to_len() + StakeAccount::INIT_SPACE, // not needed here
         mut,
         seeds = [b"stake".as_ref(), mint.key().as_ref(), config.key().as_ref()],
-        bump = stake_acct.bump,
+        bump = stake_account.bump,
         
     )]
-    pub stake_acct: Account<'info, StakeAcct>, //use same convention
-    pub metadata_program: Account<'info, Metadata>,
-    pub system_program: Program<'info, Program>,
+    pub stake_account: Account<'info, StakeAccount>, //use same convention
+    pub metadata_program: Account<'info, MetadataAccount>,
+    pub system_program: Program<'info, System>,
     pub token_program: Program<'info, Token>
 }
 
 impl<'info> Unstake <'info> {
     pub fn unstake(&mut self) -> Result<()> {
+        let time_elapsed = (Clock::get()?.unix_timestamp*self.stake_account.staked_at)/86400;
+        require!(time_elapsed>self.config.freeze_period, StakeError::TimeElapsedError);
+        self.user_account.points +=(self.config.points_per_stake as i64)*time_elapsed;
+
+        let seeds = &[
+            &[b"stake",
+            self.mint.to_account_info().key.as_ref(),
+            self.config.to_account_info().key.as_ref(),
+            &[self.stake_account.bump]]
+        ];
         let signer_seeds = &[&seeds[..]];
-        let delegate = &self.stake_acct.to_account_info();
-        let token_account = &self.token_account.to_account_info();
+
+        let program = self.token_program.to_account_info();
+        let delegate = &self.stake_account.to_account_info();
+        let token_account = &self.mint_ata.to_account_info();
         let mint = &self.mint.to_account_info();
-        let delegate = &self.stake_acct.to_account_info();
-        let delegate = &self.stake_acct.to_account_info();
+        let edition = &self.stake_account.to_account_info();
+        
+        ThawDelegatedAccountCpi::new(&self.metadata_program.to_account_info(), (delegate, token_account, mint, token_program, edition).invoke_signed(signer_seeds));
+        let account = Revoke{
+            source: self.mint_ata.to_account_info(),
+            authority: self.user.to_account_info()
+        };
+
+        let cpi_ctx = CpiContext::new(program, account);
+        revoke(cpi_ctx)?;
+        Ok(())
 
     }
+
 }

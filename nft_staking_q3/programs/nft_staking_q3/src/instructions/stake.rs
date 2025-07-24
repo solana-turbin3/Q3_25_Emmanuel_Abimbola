@@ -1,5 +1,5 @@
+#![allow(unexpected_cfgs)]
 use anchor_lang::prelude::*;
-
 use anchor_spl::{
     metadata::{
         mpl_token_metadata::instructions::{
@@ -7,7 +7,7 @@ use anchor_spl::{
             FreezeDelegatedAccountCpiAccounts
         },
         MasterEditionAccount,
-        Metadata,
+        //Metadata,
         MetadataAccount,
     },
     token::{
@@ -18,7 +18,8 @@ use anchor_spl::{
     },
 };
 
-use crate::StakeAcct;
+use crate::{state::StakeAccount, StakeConfig};
+use crate::state::UserAccount;
 
 #[derive(Accounts)]
 pub struct Stake<'info> {
@@ -36,11 +37,10 @@ pub struct Stake<'info> {
 
 
     #[account(
-        
-        seeds = [b"user".as_ref(), user.key().as_ref()]
-        bump = user_acct.bump,
+        seeds = [b"user".as_ref(), user.key().as_ref()],
+        bump = user_account.bump,
     )]
-    pub user_account: Account<'info, StakeAcct>,
+    pub user_account: Account<'info, UserAccount>,
     #[account(
         seeds = [b"metadata", metadata_program.key().as_ref(), mint.key().as_ref()],
         seeds::program = metadata_program.key(),
@@ -60,33 +60,33 @@ pub struct Stake<'info> {
     pub edition: Account<'info, MasterEditionAccount>, // the masterEdition proves non-fungibility of the asset. That's why we use it. Means no one can mint other supplies of it... What's the alternative???
 
      #[account(
-        init,
-        payer = administrator,
-        seeds = [b"buhari".as_ref()],
+        seeds = [b"config"],
         bump = config.bump,
     )]
-    pub config: Account <'info, ConfigState>,
+    pub config: Account <'info, StakeConfig>,
 
     #[account(
         init,
         payer = user,
-        space = StakeAcct::DISCRIMINATOR.to_len() + StakeAcct::INIT_SPACE,
+        space = StakeAccount::DISCRIMINATOR.len() + StakeAccount::INIT_SPACE,
         seeds = [b"stake".as_ref(), mint.key().as_ref(), config.key().as_ref()],
+        bump
     )]
-    pub stake_account: Account<'info, StakeAcct>,
-    pub metadata_program: Account<'info, Metadata>,
-    pub system_program: Program<'info, Program>,
-    pub token_program: Program<'info, Token>
+    pub stake_account: Account<'info, StakeAccount>,
+    pub metadata_program: Account<'info, MetadataAccount>,
+    pub system_program: Program<'info, System>,
+    pub token_program: Program<'info, Token>,
+    //pub clock: Sysvar<'info, Clock>
 }
 
 impl<'info> Stake <'info> {
     pub fn stake(&mut self, bump: &StakeBumps) -> Result<()> {
-        assert!(self.user_acct.amount_staked < self.config.max_stake);
+        assert!(self.user_account.amount_staked < self.config.max_staked);
 
-        self.stake_account.set_inner(StakeAcct {
+        self.stake_account.set_inner(StakeAccount {
             owner: self.user.key(),
             mint: self.mint.key(),
-            staked_at: Clock::get().unix_timestamp,
+            staked_at: Clock::get()?.unix_timestamp,
             bump: bump.stake_account
         });
 
@@ -115,7 +115,7 @@ impl<'info> Stake <'info> {
         let mint = &self.mint.to_account_info();
         let token_program = &self.token_program.to_account_info();
         let metadata_program = &self.metadata_program.to_account_info();
-        let metadata_program = &self.metadata_program.to_account_info();
+        // all the accounts are necessary for the Freeze... to function
 
         FreezeDelegatedAccountCpi::new(
             metadata_program,
@@ -127,10 +127,14 @@ impl<'info> Stake <'info> {
                 token_program
             }
         ).invoke_signed(signer_seeds)?;
-        //what does invode_signed do here???
+        //what does invoke_signed do here???
 
         self.user_account.amount_staked += 1;
 
         Ok(())
     }
 }
+
+// all the functions work to >> have the user stake assets.
+// quite similar to tokenTransfer. The only difference is the NFTs..
+// the User gives a 3rdParty ability to perform txns on their behalf (DELEGATING)

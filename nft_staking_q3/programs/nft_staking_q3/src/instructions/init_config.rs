@@ -1,9 +1,11 @@
+#![allow(unexpected_cfgs)]
+// #![allow()]
 use anchor_lang::prelude::*;
-
-use crate::ConfigState;
+use anchor_spl::token:: {Mint, Token};
+use crate::StakeConfig;
 
 #[derive(Accounts)]
-pub struct Initialize {
+pub struct Initialize <'info> {
 
     pub system_program: Program<'info, System>,
     pub token_program: Program<'info, Token>,
@@ -14,29 +16,41 @@ pub struct Initialize {
     #[account(
         init,
         payer = administrator,
-        seeds = [b"buhari"],
+        seeds = [b"config"],
         bump,
-        space = ConfigState::DISCRIMINATOR.len() + ConfigState::INIT_SPACE,
+        space = StakeConfig::DISCRIMINATOR.len() + StakeConfig::INIT_SPACE,
     )]
-    pub config: Account <'info, ConfigState>,
+    pub config: Account <'info, StakeConfig>,
 
     #[account(
         init_if_needed,
         payer = administrator,
-        seeds = [b"rwds", configg.key().as_ref()]
+        seeds = [b"rewards", config.key().as_ref()],
+        bump,
+        mint::decimals = 6,
+        mint::authority = config
     )]
-    pub rwd_mnt: Account<'info, Mint>
+    pub reward_mint: Account<'info, Mint>
 }
 
-impl<'info> InitConfig<'info> {
-    pub fn initialize_configg (&mut self, points_per_stake: u8, max_staked: u8, freeze_period: u8, bumps: &InitializeConfiggBumps) {
-        self.config.set_inner(ConfigState {
-            points_per_stake: u8,
-            max_staked: u8,
-            freeze_period: u32,
-            reward_bump: u8,
-            bump: u8,
+impl<'info> InitializeConfig<'info> {
+    pub fn initialize_config (
+        &mut self,
+        points_per_stake: u8, 
+        max_staked: u8, 
+        freeze_period: i64, 
+        reward_bump: u8, 
+        bumps: u8,
+    ) -> Result<()> {
+        self.config.set_inner(StakeConfig {
+            points_per_stake,
+            max_staked,
+            freeze_period,
+            reward_bump: reward_mint.bump,
+            bump: config.bump,
         });
+
+        Ok(())
     }
 }
 
