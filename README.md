@@ -42,6 +42,16 @@ I made it in guys.
 - I attended the solA classes this week, and reviewed the solB at later times because of hectic daily schedules.
 - Working on the NFT marketplace. More implementation coming soon.
 - My main takeaway from the week's classes is to view my project from a User's standpoint. Code is beautiful, but it is worse when no one uses your code.
-- I went ahead to create an X account for the project, and started doing some brief branding for it. 
+- I went ahead to create an X account for the project, and started doing some brief branding for it.
+
+
+## Week 4
+- This might rank as the most hectic I have faced so far, I think the coming week will be wilder though.
+- It begun with implementing some changes to the codebase I had earlier.
+- I then went along to review my codebase to accommodate some changes in the week.
+- I prepared some slides that I presented on my capstone project. @bitn8 did some reviews on it, and I niched down to develop a POC.
+- <img width="1615" height="880" alt="Screenshot 2025-07-26 120603" src="https://github.com/user-attachments/assets/81497ca4-25b2-4d6f-8741-7612a1046a7f" />
+- Learnt some alphas with MagicBlock and its use case. @Apaar did a session for Sol A, which I am yet to catch up on, but definitely will.
+- The weekend got me rewatching the videos and coming up with better ways to do the tasks.
 - - *Stay tuned for more updates...*
 
