@@ -7,7 +7,7 @@ use anchor_spl::{
             FreezeDelegatedAccountCpiAccounts
         },
         MasterEditionAccount,
-        //Metadata,
+        Metadata,
         MetadataAccount,
     },
     token::{
@@ -18,8 +18,7 @@ use anchor_spl::{
     },
 };
 
-use crate::{state::StakeAccount, StakeConfig};
-use crate::state::UserAccount;
+use crate::{state::StakeAccount, StakeConfig, UserAccount};
 
 #[derive(Accounts)]
 pub struct Stake<'info> {
@@ -53,7 +52,11 @@ pub struct Stake<'info> {
     pub metadata: Account<'info, MetadataAccount>,
 
     #[account(
-        seeds = [b"metadata", metadata_program.key().as_ref(), mint.key().as_ref()],
+        seeds = [
+            b"metadata", 
+            metadata_program.key().as_ref(), 
+            mint.key().as_ref()
+            ],
         seeds::program = metadata_program.key(),
         bump,
     )]
@@ -73,7 +76,7 @@ pub struct Stake<'info> {
         bump
     )]
     pub stake_account: Account<'info, StakeAccount>,
-    pub metadata_program: Account<'info, MetadataAccount>,
+    pub metadata_program: Program<'info, Metadata>,
     pub system_program: Program<'info, System>,
     pub token_program: Program<'info, Token>,
     //pub clock: Sysvar<'info, Clock>
