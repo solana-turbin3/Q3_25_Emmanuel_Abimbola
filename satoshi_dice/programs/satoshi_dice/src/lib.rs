@@ -22,23 +22,21 @@ pub mod satoshi_dice {
 
     pub fn place_bet(
         ctx: Context<PlaceBet>,
-        bumps: &PlaceBetBumps,
         seed: u128,
         roll: u8,
         amount: u64
         ) -> Result<()> {
-        ctx.accounts.place_bet(bumps, seed, roll, amount)
+        ctx.accounts.place_bet(&ctx.bumps, seed, roll, amount)
     }
 
-    pub fn refund_bet(ctx: Context<RefundBet>, 
-        _bumps: &RefundBetBumps) -> Result<()> {
-        ctx.accounts.refund_bet(_bumps)
+    pub fn refund_bet(ctx: Context<RefundBet>, ) -> Result<()> {
+        ctx.accounts.refund_bet(&ctx.bumps)
     }
 
     pub fn resolve_bet(
         ctx: Context<ResolveBet>,
-        bumps: &ResolveBetBumps, sig: &[u8], 
+         sig: &[u8], 
     ) -> Result<()> {
-        ctx.accounts.resolve_bet(bumps, sig)
+        ctx.accounts.resolve_bet(&ctx.bumps, sig)
     }
 }

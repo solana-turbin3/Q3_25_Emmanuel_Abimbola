@@ -7,8 +7,8 @@ use anchor_lang::{
 };
 
 use crate::{
-    Bet,
-    error::ErrorCode
+    error::{DiceyErrors},
+    Bet
 };
 
 #[derive(Accounts)]
@@ -43,7 +43,7 @@ impl<'info> RefundBet<'info> {
         _bumps: &RefundBetBumps
     ) -> Result<()> {
         let slot = Clock::get()?.slot;
-        require!(self.bet.slot - slot > 1000, ErrorCode::TimeoutNotReached);
+        require!(self.bet.slot - slot > 1000, DiceyErrors::TimeoutNotReached);
 
         let cpi_program = self.system_program.to_account_info();
         let accounts = Transfer {
