@@ -3,7 +3,7 @@ use anchor_lang::prelude::*;
 use anchor_spl::token::{
     Token
 };
-use crate::state::user_account;
+use crate::{UserAccount};
 
 #[derive(Accounts)]
 pub struct InitUser <'info> {
@@ -18,18 +18,18 @@ pub struct InitUser <'info> {
         init,
         payer = user,
         seeds = [b"user", user.key.as_ref()],
-        bump,
         space = UserAccount::DISCRIMINATOR.len() + UserAccount::INIT_SPACE,
+        bump
     )]
     pub user_account: Account<'info, UserAccount>,
 }
 
 impl<'info> InitUser <'info> {
-    pub fn init_user(&mut self, bumps: &InitializeUserBumps) -> Result<()> {
+    pub fn init_user(&mut self, bump: &InitUserBumps) -> Result<()> {
         self.user_account.set_inner(UserAccount {
             points: 0,
             amount_staked: 0,
-            bump: user_account.bump,
+            bump: bump.user_account,
         });
         Ok(())
     }

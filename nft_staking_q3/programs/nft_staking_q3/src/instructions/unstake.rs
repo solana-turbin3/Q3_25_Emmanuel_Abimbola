@@ -4,11 +4,11 @@ use anchor_spl::{
     metadata::{
         mpl_token_metadata::instructions::{
             ThawDelegatedAccountCpi, 
-            //ThawDelegatedAccountCpiAccounts
+            ThawDelegatedAccountCpiAccounts
         },
         MasterEditionAccount,
-        //Metadata,
-        MetadataAccount,
+        Metadata,
+        //MetadataAccount,
     },
     token::{
         revoke,
@@ -19,8 +19,8 @@ use anchor_spl::{
 };
 
 
-use crate::StakeConfig;
-use crate::StakeAccount;
+use crate::{StakeConfig, StakeAccount, UserAccount};
+use crate::error::*;
 
 #[derive(Accounts)]
 pub struct Unstake<'info> {
@@ -46,18 +46,23 @@ pub struct Unstake<'info> {
     pub user_account: Account<'info, UserAccount>,
 
     #[account(
-        seeds = [b"edition", b"metadata", metadata_program.key().as_ref(), mint.key().as_ref()], // why do we need both?
+        seeds = [
+            b"edition", 
+            b"metadata", 
+            metadata_program.key().as_ref(), 
+            mint.key().as_ref()], // why do we need both?
         seeds::program = metadata_program.key(),
         bump,
     )]
     pub edition: Account<'info, MasterEditionAccount>, // the masterEdition proves non-fungibility of the asset. That's why we use it. Means no one can mint other supplies of it... What's the alternative???
 
      #[account(
-        seeds = [b"buhari".as_ref()],
+        seeds = [b"config".as_ref()],
         bump = config.bump,
     )]
     pub config: Account <'info, StakeConfig>,
 
+    
     #[account(
         // space = StakeAccount::DISCRIMINATOR.to_len() + StakeAccount::INIT_SPACE, // not needed here
         mut,
@@ -66,38 +71,45 @@ pub struct Unstake<'info> {
         
     )]
     pub stake_account: Account<'info, StakeAccount>, //use same convention
-    pub metadata_program: Account<'info, MetadataAccount>,
+    pub metadata_program: Program<'info, Metadata>,
     pub system_program: Program<'info, System>,
     pub token_program: Program<'info, Token>
 }
 
 impl<'info> Unstake <'info> {
     pub fn unstake(&mut self) -> Result<()> {
-        let time_elapsed = (Clock::get()?.unix_timestamp*self.stake_account.staked_at)/86400;
+        let time_elapsed = (Clock::get()?.unix_timestamp - self.stake_account.staked_at)/86400;
         require!(time_elapsed>self.config.freeze_period, StakeError::TimeElapsedError);
-        self.user_account.points +=(self.config.points_per_stake as i64)*time_elapsed;
+        self.user_account.points +=(self.config.points_per_stake)*time_elapsed;
 
         let seeds = &[
-            &[b"stake",
+            &b"stake".as_ref(),
             self.mint.to_account_info().key.as_ref(),
-            self.config.to_account_info().key.as_ref(),
-            &[self.stake_account.bump]]
+            //self.config.to_account_info().key.as_ref(),
+            &[self.stake_account.bump]
         ];
         let signer_seeds = &[&seeds[..]];
 
-        let program = self.token_program.to_account_info();
+        
+        let program = &self.metadata_program.to_account_info();
         let delegate = &self.stake_account.to_account_info();
         let token_account = &self.mint_ata.to_account_info();
-        let mint = &self.mint.to_account_info();
         let edition = &self.stake_account.to_account_info();
+        let mint = &self.mint.to_account_info();
+        let token_program = &self.token_program.to_account_info();
         
-        ThawDelegatedAccountCpi::new(&self.metadata_program.to_account_info(), (delegate, token_account, mint, token_program, edition).invoke_signed(signer_seeds));
+        ThawDelegatedAccountCpi::new(
+            program, 
+        ThawDelegatedAccountCpiAccounts {
+            delegate, token_account, edition, mint, token_program
+        }, ).invoke_signed(signer_seeds)?;
+        
         let account = Revoke{
             source: self.mint_ata.to_account_info(),
             authority: self.user.to_account_info()
         };
 
-        let cpi_ctx = CpiContext::new(program, account);
+        let cpi_ctx = CpiContext::new(self.token_program.to_account_info(), account);
         revoke(cpi_ctx)?;
         Ok(())
 

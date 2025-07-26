@@ -5,7 +5,7 @@ use anchor_spl::token:: {Mint, Token};
 use crate::StakeConfig;
 
 #[derive(Accounts)]
-pub struct Initialize <'info> {
+pub struct InitializeConfig <'info> {
 
     pub system_program: Program<'info, System>,
     pub token_program: Program<'info, Token>,
@@ -36,18 +36,17 @@ pub struct Initialize <'info> {
 impl<'info> InitializeConfig<'info> {
     pub fn initialize_config (
         &mut self,
-        points_per_stake: u8, 
+        points_per_stake: i64, 
         max_staked: u8, 
         freeze_period: i64, 
-        reward_bump: u8, 
-        bumps: u8,
+        bump: &InitializeConfigBumps,
     ) -> Result<()> {
         self.config.set_inner(StakeConfig {
             points_per_stake,
             max_staked,
             freeze_period,
-            reward_bump: reward_mint.bump,
-            bump: config.bump,
+            reward_bump: bump.reward_mint,
+            bump: bump.config,
         });
 
         Ok(())

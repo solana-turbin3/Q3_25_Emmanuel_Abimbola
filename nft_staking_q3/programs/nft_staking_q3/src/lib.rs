@@ -1,4 +1,5 @@
 #![allow(unexpected_cfgs)]
+#![allow(deprecated)]
 pub mod constants;
 pub mod error;
 pub mod instructions;
@@ -18,33 +19,32 @@ pub mod nft_staking_q3 {
 
     pub fn initialize_config(
         ctx: Context<InitializeConfig>,
-        points_per_stake: u8, 
+        points_per_stake: i64, 
         max_staked: u8, 
         freeze_period: i64, 
-        reward_bump: u8, 
-        bump: u8,
+        //bump: &InitializeConfigBumps,
     ) -> Result<()> {
-        init_config::handler(ctx, points_per_stake, max_staked, freeze_period, reward_bump, bump)
+        ctx.accounts.initialize_config(points_per_stake, max_staked, freeze_period, &ctx.bumps)
     }
 
     pub fn init_user(
         ctx: Context<InitUser>,
-        bump: u8
+        //bump: &InitUserBumps
     ) -> Result<()> {
-        init_user::handler(ctx, bump)
+        ctx.accounts.init_user(&ctx.bumps)
     }
     
     pub fn stake(
         ctx: Context<Stake>,
-        bump: u8
+        //bump: u8
     ) -> Result<()> {
-        stake::handler(ctx, bump)
+        ctx.accounts.stake(&ctx.bumps)
     }
 
     pub fn unstake(
         ctx: Context<Unstake>
     ) -> Result<()> {
-        unstake::handler(ctx)
+        ctx.accounts.unstake()
     }
 
 }
