@@ -71,15 +71,16 @@ impl<'info> ResolveBet<'info> {
             signatures.len(), 
             1, 
             DiceyErrors::Ed25519DataLength);
+
         let signature = &signatures[0];
         require!(signature.is_verifiable, DiceyErrors::Ed25519Header);
-
         require_keys_eq!(
             signature.public_key.ok_or(DiceyErrors::Ed25519Pubkey)?,
             self.house.key(),
             DiceyErrors::Ed25519Pubkey
         );
         
+        // Make sure the signature matches
         require!(
             &signature.signature.ok_or(DiceyErrors::Ed25519Signature)?.eq(sig),
             DiceyErrors::Ed25519Signature
