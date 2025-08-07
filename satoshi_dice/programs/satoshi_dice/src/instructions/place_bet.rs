@@ -11,7 +11,7 @@ pub struct PlaceBet <'info> {
     #[account(mut)]
     pub player: Signer<'info>,
 
-    ///CHECK: This is safe
+    ///CHECK: This is safe, because I am the admin
     pub house: UncheckedAccount<'info>,
 
     #[account(

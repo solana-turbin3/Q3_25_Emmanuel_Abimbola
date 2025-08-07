@@ -13,7 +13,7 @@ use anchor_lang::{
 use anchor_instruction_sysvar::{Ed25519InstructionSignatures};
 use crate::{
     Bet,
-    error::ErrorCode
+    error::DiceyErrors
 };
 pub const HOUSE_EDGE: u16 = 150; //1.5% House edge
 
@@ -52,35 +52,46 @@ pub struct ResolveBet <'info> {
 }
 
 impl<'info> ResolveBet<'info> {
-    pub fn verify_ed25519_signature(
+    pub fn verify_ed25519_signature( //this verifies that the signature is correct and untampered with
         &mut self,
         sig: &[u8]
-    ) -> Result<()> {
+    ) -> Result<()> { //what does all these do?
         let ix = load_instruction_at_checked(0, &self.instruction_sysvar.to_account_info())?;
-        require_keys_eq!(ix.program_id, ed25519_program::ID, ErrorCode::Ed25519Program);
-        require_eq!(ix.accounts.len(), 0, ErrorCode::Ed25519Accounts);
+        require_keys_eq!(ix.program_id, ed25519_program::ID, DiceyErrors::Ed25519Program);
+        
+        require_eq!(
+            ix.accounts.len(), 
+            0, 
+            DiceyErrors::Ed25519Accounts);
+        require_eq!(ix.accounts.len(), 0, DiceyErrors::Ed25519Accounts);
+        
+        // Unpack the signature to be able to make checks on it.
         let signatures = Ed25519InstructionSignatures::unpack(&ix.data)?.0;
-        require_eq!(signatures.len(), 1, ErrorCode::Ed25519DataLength);
-        let signature = &signatures[0];
-        require!(signature.is_verifiable, ErrorCode::Ed25519Header);
+        require_eq!(
+            signatures.len(), 
+            1, 
+            DiceyErrors::Ed25519DataLength);
 
+        let signature = &signatures[0];
+        require!(signature.is_verifiable, DiceyErrors::Ed25519Header);
         require_keys_eq!(
-            signature.public_key.ok_or(ErrorCode::Ed25519Pubkey)?,
+            signature.public_key.ok_or(DiceyErrors::Ed25519Pubkey)?,
             self.house.key(),
-            ErrorCode::Ed25519Pubkey
+            DiceyErrors::Ed25519Pubkey
         );
         
+        // Make sure the signature matches
         require!(
-            &signature.signature.ok_or(ErrorCode::Ed25519Signature)?.eq(sig),
-            ErrorCode::Ed25519Signature
+            &signature.signature.ok_or(DiceyErrors::Ed25519Signature)?.eq(sig),
+            DiceyErrors::Ed25519Signature
         );
 
         require!(
             &signature.message
             .as_ref()
-            .ok_or(ErrorCode::Ed25519Signature)?
+            .ok_or(DiceyErrors::Ed25519Signature)?
             .eq(&self.bet.to_slice()),
-            ErrorCode::Ed25519Signature
+            DiceyErrors::Ed25519Signature
         );
 
         Ok(())
@@ -101,11 +112,11 @@ impl<'info> ResolveBet<'info> {
         if self.bet.roll > roll {
             let payout = (self.bet.amount as u128)
                 .checked_mul(1000 - (HOUSE_EDGE as u128))
-                .ok_or(ErrorCode::Overflow)?
+                .ok_or(DiceyErrors::Overflow)?
                 .checked_div((self.bet.roll as u128) - 1)
-                .ok_or(ErrorCode::Overflow)?
+                .ok_or(DiceyErrors::Overflow)?
                 .checked_div(100)
-                .ok_or(ErrorCode::Overflow)? as u64;
+                .ok_or(DiceyErrors::Overflow)? as u64;
 
             let accounts = Transfer {
                 from: self.vault.to_account_info(),
