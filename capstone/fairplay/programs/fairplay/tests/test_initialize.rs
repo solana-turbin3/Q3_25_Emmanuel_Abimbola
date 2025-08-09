@@ -13,7 +13,9 @@ fn test_initialize() {
 
     let instruction = Instruction::new_with_bytes(
         program_id,
-        &fairplay::instruction::Initialize {}.data(),
+        &fairplay::instruction::Initialize {
+            
+        }.data(),
         fairplay::accounts::Initialize {}.to_account_metas(None),
     );
 

@@ -7,7 +7,7 @@ pub struct CampaignConfig {
    pub sponsor: Pubkey,
    pub vault: Pubkey,
    pub usdc_token_mint: Pubkey,
-   pub total_pool_amount: u64,
+   pub total_pool_amount: u128,
    pub start_time: i64,
    pub end_time: i64,
    pub is_finalized: bool,

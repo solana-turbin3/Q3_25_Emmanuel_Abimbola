@@ -20,7 +20,7 @@ pub mod fairplay {
     pub fn initialize(
         ctx: Context<Initialize>,
         campaign_id: u8,
-        total_pool_amount: u64,
+        total_pool_amount: u128,
         start_time: i64,
         end_time: i64,
         total_score: u128,
@@ -36,4 +36,42 @@ pub mod fairplay {
     ) -> Result<()> {
         ctx.accounts.initialize_escrow(campaign_id, &ctx.bumps)
     }
+
+    pub fn initialize_contributor_state(
+        ctx: Context<Initialize>,
+        created_at: i64
+    ) -> Result<()> {
+        ctx.accounts.initialize_contributor_state(created_at, &ctx.bumps)
+    }
+
+    pub fn deposit(
+        ctx: Context<Deposit>,
+        amount: u64
+    ) -> Result<()> {
+        ctx.accounts.deposit(amount)
+    }
+
+    pub fn assign_score(
+        ctx: Context<Finalize>,
+        contribution_score: u128,
+    ) -> Result<()> {
+        ctx.accounts.assign_score(contribution_score, &ctx.bumps)
+    }
+
+    
+    pub fn scoring_engine(
+        ctx: Context<Finalize>,
+        contribution_score: u128,
+    ) -> Result<()> {
+        ctx.accounts.scoring_engine(contribution_score)
+    }
+
+    pub fn claim_reward(
+        ctx: Context<Claim>,
+        reward_share: u64,
+    ) -> Result<()> {
+        ctx.accounts.claim_reward(reward_share)
+    }
+
+
 }
