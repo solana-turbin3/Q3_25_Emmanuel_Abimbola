@@ -63,7 +63,7 @@ impl <'info> Initialize <'info> {
     pub fn initialize (
         &mut self,
         campaign_id: u8,
-        total_pool_amount: u64,
+        total_pool_amount: u128,
         start_time: i64,
         end_time: i64,
         total_score: u128,
@@ -105,20 +105,20 @@ impl <'info> Initialize <'info> {
 
     pub fn initialize_contributor_state (
         &mut self,
-        git_id: Vec<u64>,
+        // git_id: Vec<u64>,
         created_at: i64,
         bumps: &InitializeBumps
     ) -> Result<()> {
         self.contributor.set_inner(ContributorState {
             campaign_id: self.campaign_config.campaign_id,
             user: self.user.key(),
-            git_id,
+            // git_id,
             contribution_score: 0,
             reward_share: 0,
             claimed: false,
             //contributions: 0,
             created_at,
-            last_updated: 0,
+            // last_updated: 0,
             bump: bumps.contributor
         });
 
