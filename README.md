@@ -53,5 +53,11 @@ I made it in guys.
 - <img width="1615" height="880" alt="Screenshot 2025-07-26 120603" src="https://github.com/user-attachments/assets/81497ca4-25b2-4d6f-8741-7612a1046a7f" />
 - Learnt some alphas with MagicBlock and its use case. @Apaar did a session for Sol A, which I am yet to catch up on, but definitely will.
 - The weekend got me rewatching the videos and coming up with better ways to do the tasks.
+
+
+Wrapping Up
+- The final week was all about the enrichment classes. I got to learn from many projects within the ecosystem.
+- Fun fact: turbin3 grads are doing the mos twithin the ecosystem.
+- I signed up to present my pitch during the demoday. It was quite blissful.
 - - *Stay tuned for more updates...*
 
